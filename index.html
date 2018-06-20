@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1> Hello </h1>
+
+<script type="text/javascript"> 
+
+// @MARKUS
+var updatedJSON = {
+  "data": {
+    "nodes": [
+      {
+        "uuid": "derivativePoop",
+        "concept": "derivative",
+        "metadata": {
+          "contents": [
+            {
+              "uuid": "content_1",
+              "title": "Angular Ladida",
+              "summary": "Create your own skatepark while learning angular momentum"
+            }
+          ]
+        }
+      },
+      {
+        "uuid": "vectors",
+        "concept": "vectors",
+        "metadata": {
+          "contents": [
+            {
+              "uuid": "vector_content_1",
+              "title": "vectors JAJA",
+              "summary": "LROIAD MSD ASDASLKDJA LSD ASD SDaS d"
+            }
+          ]
+        }
+      },
+      {
+        "uuid": "position (r)",
+        "concept": "position (r)"
+      },
+      {
+        "uuid": "time (t)",
+        "concept": "time (t)"
+      },
+      {
+        "uuid": "velocity",
+        "concept": "velocity",
+        "metadata": {
+          "contents": [
+            {
+              "uuid": "veloccccccc_1010",
+              "title": "JAB JIB VELOCITY",
+              "summary": "KADASDSAD SD SDaS d"
+            },
+            {
+              "uuid": "velocity_123",
+              "title": "RAPTORS EVERYWHERE",
+              "summary": "Camels drink much water etc"
+            }
+          ]
+        }
+      },
+      {
+        "uuid": "speed",
+        "concept": "speed"
+      },
+      {
+        "uuid": "frames of reference",
+        "concept": "frames of reference"
+      },
+      {
+        "uuid": "inertia",
+        "concept": "inertia"
+      },
+      {
+        "uuid": "Newton's 1st Law of Motion",
+        "concept": "Newton's 1st Law of Motion"
+      },
+      {
+        "uuid": "force (F)",
+        "concept": "force (F)"
+      },
+      {
+        "uuid": "work = Fs",
+        "concept": "work = Fs"
+      },
+      {
+        "uuid": "friction",
+        "concept": "friction"
+      },
+      {
+        "uuid": "momentum (p = mv)",
+        "concept": "momentum (p = mv)"
+      },
+      {
+        "uuid": "mass (m)",
+        "concept": "mass (m)"
+      },
+      {
+        "uuid": "acceleration (a = dv/dt = d^2(r)/dt)",
+        "concept": "acceleration (a = dv/dt = d^2(r)/dt)"
+      },
+      {
+        "uuid": "gravity",
+        "concept": "gravity"
+      },
+      {
+        "uuid": "weight (W = mg)",
+        "concept": "weight (W = mg)"
+      },
+      {
+        "uuid": "Newtons 2nd Law of Motion",
+        "concept": "Newtons 2nd Law of Motion"
+      },
+      {
+        "uuid": "Newtons 2nd Law of Motion (2)",
+        "concept": "Newtons 2nd Law of Motion (2)"
+      }
+    ],
+    "links": [
+      {
+        "from": "velocity",
+        "to": "speed"
+      },
+      {
+        "from": "velocity",
+        "to": "frames of reference"
+      },
+      {
+        "from": "frames of reference",
+        "to": "Newton's 1st Law of Motion"
+      },
+      {
+        "from": "velocity",
+        "to": "momentum (p = mv)"
+      },
+      {
+        "from": "velocity",
+        "to": "acceleration (a = dv/dt = d^2(r)/dt)"
+      },
+      {
+        "from": "acceleration (a = dv/dt = d^2(r)/dt)",
+        "to": "gravity"
+      },
+      {
+        "from": "mass (m)",
+        "to": "momentum (p = mv)"
+      },
+      {
+        "from": "acceleration (a = dv/dt = d^2(r)/dt)",
+        "to": "Newtons 2nd Law of Motion"
+      },
+      {
+        "from": "gravity",
+        "to": "weight (W = mg)"
+      },
+      {
+        "from": "inertia",
+        "to": "Newton's 1st Law of Motion"
+      },
+      {
+        "from": "Newtons 2nd Law of Motion",
+        "to": "weight (W = mg)"
+      },
+      {
+        "from": "force (F)",
+        "to": "work = Fs"
+      },
+      {
+        "from": "momentum (p = mv)",
+        "to": "Newtons 2nd Law of Motion (2)"
+      },
+      {
+        "from": "force (F)",
+        "to": "Newtons 2nd Law of Motion"
+      },
+      {
+        "from": "force (F)",
+        "to": "friction"
+      },
+      {
+        "from": "derivative",
+        "to": "velocity"
+      },
+      {
+        "from": "vectors",
+        "to": "velocity"
+      },
+      {
+        "from": "position (r)",
+        "to": "velocity"
+      },
+      {
+        "from": "time (t)",
+        "to": "velocity"
+      }
+    ]
+  }
+
+};
+// @MARKUS
+// Keep this as constant for now
+var id = '5afd1f6666f40f710d14c85e'
+
+
+var urlLoad = 'http://174.138.2.82/loadEditor';
+var urlUpdate = 'http://174.138.2.82/updateEditor';
+var urlLoadGraph = 'http://174.138.2.82/loadGraph';
+var urlUpdateGraph = 'http://174.138.2.82/updateGraph';
+var urlSave = 'http://174.138.2.82/saveEditor';
+
+
+
+
+
+// fetch(loadEditor, {
+//   method: 'GET', 
+//   headers: new Headers({
+//     'id': id
+//   })
+// }).then(function(response) {
+//     console.log(response);
+//     return response.json();
+//   })
+//   .then(function(myJson) {
+//     console.log(myJson);
+//   });
+
+
+// fetch(urlLoadGraph, {
+//   method: 'GET', 
+// }).then(function(response) {
+//     console.log(response);
+//     return response.json();
+//   })
+//   .then(function(myJson) {
+//     console.log(myJson);
+//   })
+
+// var id = '1234567890'
+
+// var body= {"rating":34}
+
+
+// fetch(urlSave, {
+//   method: 'POST', 
+//   body: JSON.stringify(body), // data can be `string` or {object}!
+//   headers: new Headers({
+//     'Content-Type': 'application/json',
+//     'id': id
+//   })
+// }).then(res => res.json())
+// .catch(error => console.error('Error:', error))
+// .then(response => console.log('Success:', response));
+
+
+
+const saveEndpoint = 'http://174.138.2.82/saveEditor';
+var body= {"rating":34};   
+fetch(saveEndpoint, {
+     method: 'POST',
+     body: JSON.stringify(body),
+     headers: new Headers({
+      'Content-Type': 'application/json',
+       'id': 666
+    })
+   }).then(res => res.json())
+   .catch(error => console.error('Error:', error))
+   .then(response => console.log('Success:', response));
+
+
+</script>
+
+</body>
+</html>

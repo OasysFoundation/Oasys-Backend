@@ -55,7 +55,7 @@ app.get('/GetContentsPreview', function (req, res) {
 Loads full JSON of selected experience from “contents” db
 */
 
-app.get('/:userId/:contentId', function (req, res) {
+app.get('/user/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;

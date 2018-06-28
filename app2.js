@@ -78,11 +78,10 @@ Loads avg rating of content from "ratings" db
 
 app.get('/:userId/:contentId/avgRating', function (req, res) {
 
-  contentId = req.params.contentId;
   userId = req.params.userId;
+  contentId = req.params.contentId;
 
-
-  mongo.readRatingFromMongo(contentId, userId, function(result,err) { 
+  mongo.readRatingFromMongo(userId, contentId, function(result,err) { 
       if (err){
         console.log(err);
         res.end("Unexpected Error from Db");
@@ -178,73 +177,73 @@ app.post('/:userId/:contentId/save', function (req, res) {
 //Save editor JSON to DB
 //Saves to 'graph' db in mongo
 
-app.post('/saveEditor', (req, res) => {
+// app.post('/saveEditor', (req, res) => {
  
- if(!req.body){
-    res.end("Please provide something in the body. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
-  }
-  else{
-    jsonBody =req.body;
-    mongo.writeToMongo(jsonBody, function(result,err) { 
-      if (err){
-        console.log(err);
-        res.end("Unexpected Error from Db");
-      }
-      else if (!result.insertedId){
-        res.end("Unexpected Error from Db - no inserted ID");
-      }
-      else{
-        console.log(result);
-        console.log(result.insertedId);
-        res.send(result.insertedId); 
-      }
-    });
-  }
-});
+//  if(!req.body){
+//     res.end("Please provide something in the body. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
+//   }
+//   else{
+//     jsonBody =req.body;
+//     mongo.writeToMongo(jsonBody, function(result,err) { 
+//       if (err){
+//         console.log(err);
+//         res.end("Unexpected Error from Db");
+//       }
+//       else if (!result.insertedId){
+//         res.end("Unexpected Error from Db - no inserted ID");
+//       }
+//       else{
+//         console.log(result);
+//         console.log(result.insertedId);
+//         res.send(result.insertedId); 
+//       }
+//     });
+//   }
+// });
 
-//Save editor JSON to DB
-app.post('/updateEditor', (req, res) => {
-  if(!req.headers.id){
-    res.end("Please provide the contentID in the header. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
-  }
-  else if(!req.body){
-    res.end("Please provide something in the body. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
-  } 
-  else {
-    jsonBody =req.body;
-    mongoId = req.headers.id;
-    mongo.updateMongo(jsonBody, mongoId, function(result,err) { 
-      if (err){
-        console.log(err);
-        res.end("Unexpected Error from Db");
-      }
-      else {
-        console.log(result);
-        res.send(result);
-      } 
-    });
-  }
-});
+// //Save editor JSON to DB
+// app.post('/updateEditor', (req, res) => {
+//   if(!req.headers.id){
+//     res.end("Please provide the contentID in the header. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
+//   }
+//   else if(!req.body){
+//     res.end("Please provide something in the body. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
+//   } 
+//   else {
+//     jsonBody =req.body;
+//     mongoId = req.headers.id;
+//     mongo.updateMongo(jsonBody, mongoId, function(result,err) { 
+//       if (err){
+//         console.log(err);
+//         res.end("Unexpected Error from Db");
+//       }
+//       else {
+//         console.log(result);
+//         res.send(result);
+//       } 
+//     });
+//   }
+// });
 
-//Delete editor JSON from DB
-app.get('/deleteEditor', (req, res) => {
-  if(!req.headers.id){
-    res.end("Please provide the contentID in the header. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
-  }
-  else {
-    mongoId = req.headers.id;
-    mongo.deleteFromMongo(mongoId, function(result,err) { 
-      if (err){
-        console.log(err);
-        res.end("Unexpected Error from Db");
-      }
-      else {
-        console.log(result);
-        res.send(result); 
-      }
-    });
-  }
-});
+// //Delete editor JSON from DB
+// app.get('/deleteEditor', (req, res) => {
+//   if(!req.headers.id){
+//     res.end("Please provide the contentID in the header. For more information: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit");
+//   }
+//   else {
+//     mongoId = req.headers.id;
+//     mongo.deleteFromMongo(mongoId, function(result,err) { 
+//       if (err){
+//         console.log(err);
+//         res.end("Unexpected Error from Db");
+//       }
+//       else {
+//         console.log(result);
+//         res.send(result); 
+//       }
+//     });
+//   }
+// });
 
 
 app.listen(8080, () => console.log('Listening on port 8080'))

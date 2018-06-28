@@ -42,7 +42,7 @@ const findContent = function(userId, contentId, db, callback) {
 
 
 // Returns all ratings for given content Id
-const findRating = function(db, contentId, userId, callback) {
+const findRating = function(db, userId, contentId, callback) {
   const collection = db.collection('ratings');
   collection.find({'userId': userId ,'contentId': contentId}).toArray(function(err, result) {
     if (err) throw err;
@@ -52,7 +52,7 @@ const findRating = function(db, contentId, userId, callback) {
 }
 
 // writes rating to ratings db
-const writeRating = function(db, contentId, userId, rating, callback) {
+const writeRating = function(db, userId, contentId, rating, callback) {
   const collection = db.collection('ratings');
   rating = parseInt(rating);
   collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating}, function(err, result) {
@@ -148,7 +148,7 @@ exports.WriteRatingToMongo = function(userId, contentId, rating, callback) {
     if (err) throw err;
     else {
       console.log("Connected successfully to server");
-      writeRating(db, contentId, userId, rating, function(result,err) {
+      writeRating(db, userId, contentId, rating, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);
@@ -190,12 +190,12 @@ exports.readContentFromMongo = function(userId, contentId, callback) {
 
 
 //Reads from "ratings" db
-exports.readRatingFromMongo = function(contentId, userId, callback) {
+exports.readRatingFromMongo = function(userId, contentId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
       console.log("Connected successfully to server");
-      findRating(db, contentId, userId, function(result,err) {
+      findRating(db, userId, contentId, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

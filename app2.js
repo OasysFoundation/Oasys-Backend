@@ -79,8 +79,10 @@ Loads avg rating of content from "ratings" db
 app.get('/:userId/:contentId/avgRating', function (req, res) {
 
   contentId = req.params.contentId;
+  userId = req.params.userId;
 
-  mongo.readRatingFromMongo(contentId, function(result,err) { 
+
+  mongo.readRatingFromMongo(contentId, userId, function(result,err) { 
       if (err){
         console.log(err);
         res.end("Unexpected Error from Db");

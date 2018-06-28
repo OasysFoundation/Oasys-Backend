@@ -42,9 +42,9 @@ const findContent = function(userId, contentId, db, callback) {
 
 
 // Returns all ratings for given content Id
-const findRating = function(db, contentId, callback) {
+const findRating = function(db, contentId, userId, callback) {
   const collection = db.collection('ratings');
-  collection.find({'contentId': contentId}).toArray(function(err, result) {
+  collection.find({'userId': userId ,'contentId': contentId}).toArray(function(err, result) {
     if (err) throw err;
     console.log(result)
     callback(result);
@@ -52,10 +52,10 @@ const findRating = function(db, contentId, callback) {
 }
 
 // writes rating to ratings db
-const writeRating = function(db, contentId, rating, callback) {
+const writeRating = function(db, contentId, userId, rating, callback) {
   const collection = db.collection('ratings');
   rating = parseInt(rating);
-  collection.insertOne({"contentId": contentId, "rating": rating}, function(err, result) {
+  collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating}, function(err, result) {
     if (err) throw err;
     console.log(result);
     callback(result);
@@ -67,7 +67,7 @@ const saveContent = function(db, userId, contentId, data, callback) {
   console.log(data);
   newData = data.data;
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId}, { $set: { "data" : newData } }, {"upsert": true}, function(err, result) {
+  collection.update({"contentId": contentId}, {"userid":userId}, { $set: { "data" : newData } }, {"upsert": true}, function(err, result) {
     if (err) throw err;
     else{
       console.log("Update successful");
@@ -88,7 +88,7 @@ const publishContent = function(db, userId, contentId, data, callback) {
   my_url = data.url;
 
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId}, { $set: { "data" : newData, "title": title, "picture": picture, "description" : description, "published" : published, "tags":tags,"url":my_url} }, {"upsert": true}, function(err, result) {
+  collection.update({"contentId": contentId, "userId": userId}, { $set: { "data" : newData, "title": title, "picture": picture, "description" : description, "published" : published, "tags":tags,"url":my_url} }, {"upsert": true}, function(err, result) {
     if (err) throw err;
     else{
       console.log("Update successful");
@@ -148,7 +148,7 @@ exports.WriteRatingToMongo = function(userId, contentId, rating, callback) {
     if (err) throw err;
     else {
       console.log("Connected successfully to server");
-      writeRating(db, contentId, rating, function(result,err) {
+      writeRating(db, contentId, userId, rating, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);
@@ -190,12 +190,12 @@ exports.readContentFromMongo = function(userId, contentId, callback) {
 
 
 //Reads from "ratings" db
-exports.readRatingFromMongo = function(contentId, callback) {
+exports.readRatingFromMongo = function(contentId, userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
       console.log("Connected successfully to server");
-      findRating(db, contentId, function(result,err) {
+      findRating(db, contentId, userId, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

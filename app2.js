@@ -37,16 +37,48 @@ app.get('/GetContentsPreview', function (req, res) {
     }
     else {
       trueResult = [];
+      console.log(result.length);
       for(i = 0; i < result.length; i++){
-        trueResult.push({
-           "picture" :      result[i].picture,
-           "title" :        result[i].title,
-           "description" :  result[i].description,
-           "tags" :         result[i].tags,
-           "url" :          result[i].url
-        });
+        //make call to avg rating .then{}
+        var userAndContent = result[i].url.split('/');
+        console.log(userAndContent);
+        userId=userAndContent[2];
+        contentId=userAndContent[3];
+
+        getRating(userId,contentId, i, function(response,err){
+          avg=response[0];
+          i = response[1];
+          console.log("response inside");
+          console.log(response);
+          console.log(i);
+          if (err) {
+            res.end("Unexpected Error from Db");
+          }
+          else if(avg){
+            console.log("MADE IT INSIDE");
+            trueResult.push({
+             "picture" :      result[i].picture,
+             "title" :        result[i].title,
+             "description" :  result[i].description,
+             "tags" :         result[i].tags,
+             "url" :          result[i].url,
+             "rating" :       avg 
+            });
+          }
+          else{
+            trueResult.push({
+             "picture" :      result[i].picture,
+             "title" :        result[i].title,
+             "description" :  result[i].description,
+             "tags" :         result[i].tags,
+             "url" :          result[i].url 
+            });
+          }
+          if(i==(result.length-1))
+            res.json(trueResult); 
+
+        })
       }
-      res.json(trueResult); 
     }
   });
 });
@@ -81,27 +113,13 @@ app.get('/:userId/:contentId/avgRating', function (req, res) {
   userId = req.params.userId;
   contentId = req.params.contentId;
 
-  mongo.readRatingFromMongo(userId, contentId, function(result,err) { 
-      if (err){
-        console.log(err);
-        res.end("Unexpected Error from Db");
-      }
-      else {
-        avg = 0;
-        sum = 0;
-        count = 0;
 
-        for (var i = 0; i < result.length; i++) {
-          sum += result[i].rating;
-          count +=1;
-        }
-
-        if (count != 0) {
-          avg = sum/count;
-        }
-        res.json(avg); 
-      }
-  });
+  getRating(userId,contentId, "",function(response,err){
+    console.log(response);
+    res.json(response[0]);
+  })
+  //console.log(getRating(userId,contentId));
+  //getRating(userId,contentId,res);
 
 });
 
@@ -173,6 +191,31 @@ app.post('/:userId/:contentId/save', function (req, res) {
 
 });
 
+
+function getRating(userId,contentId,extra,callback){
+  mongo.readRatingFromMongo(userId, contentId, function(result,err) { 
+      if (err){
+        console.log(err);
+        res.end("Unexpected Error from Db");
+      }
+      else {
+        avg = 0;
+        sum = 0;
+        count = 0;
+
+        for (var i = 0; i < result.length; i++) {
+          sum += result[i].rating;
+          count +=1;
+        }
+
+        if (count != 0) {
+          avg = sum/count;
+        }
+        myResponse = [avg,extra];
+        callback(myResponse); 
+      }
+  });
+}
 
 //Save editor JSON to DB
 //Saves to 'graph' db in mongo

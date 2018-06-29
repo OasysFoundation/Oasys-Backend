@@ -74,7 +74,7 @@ app.get('/GetContentsPreview', function (req, res) {
              "url" :          result[i].url 
             });
           }
-          if(i==(result.length-1))
+          if(trueResult.length==(result.length))
             res.json(trueResult); 
 
         })

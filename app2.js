@@ -40,10 +40,8 @@ app.get('/GetContentsPreview', function (req, res) {
       console.log(result.length);
       for(i = 0; i < result.length; i++){
         //make call to avg rating .then{}
-        var userAndContent = result[i].url.split('/');
-        console.log(userAndContent);
-        userId=userAndContent[2];
-        contentId=userAndContent[3];
+        var userId=result[i].userId;
+        var contentId=result[i].contentId;
 
         getRating(userId,contentId, i, function(response,err){
           avg=response[0];
@@ -61,7 +59,8 @@ app.get('/GetContentsPreview', function (req, res) {
              "title" :        result[i].title,
              "description" :  result[i].description,
              "tags" :         result[i].tags,
-             "url" :          result[i].url,
+             "userId" :       result[i].userId,
+             "contentId":     result[i].contentId,
              "rating" :       avg 
             });
           }
@@ -71,7 +70,8 @@ app.get('/GetContentsPreview', function (req, res) {
              "title" :        result[i].title,
              "description" :  result[i].description,
              "tags" :         result[i].tags,
-             "url" :          result[i].url 
+             "userId" :       result[i].userId,
+             "contentId":     result[i].contentId,
             });
           }
           if(trueResult.length==(result.length))
@@ -158,8 +158,8 @@ app.post('/:userId/:contentId/save', function (req, res) {
       res.end("Error: Request body is empty.");
     }
     else if(req.body.published==1){
-      if(!req.body.picture || !req.body.title || !req.body.description || !req.body.tags || !req.body.url)
-        res.end("You cannot publish unless you provide the picture url, title, description, tags, and url");
+      if(!req.body.picture || !req.body.title || !req.body.description || !req.body.tags )
+        res.end("You cannot publish unless you provide the picture url, title, description, and tags");
       else {
         jsonBody =req.body;
         mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 

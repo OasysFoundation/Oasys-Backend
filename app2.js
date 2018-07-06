@@ -7,6 +7,30 @@ const express = require('express')
 const util = require('util');
 const bodyParser = require('body-parser')
 const mongo = require('./mongo.js');
+
+const aws = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
+// Set S3 endpoint to DigitalOcean Spaces
+const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
+
+const s3 = new aws.S3({
+  endpoint: spacesEndpoint
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'oasys-education',
+    acl: 'public-read',
+    key: function (request, file, cb) {
+      console.log(file);
+      cb(null, file.originalname);
+    }
+  })
+}).array('upload', 1);
+
 const app = express()
 
 
@@ -216,6 +240,19 @@ function getRating(userId,contentId,extra,callback){
       }
   });
 }
+
+app.post('/upload', function (request, response, next) {
+  upload(request, response, function (error) {
+    if (error) {
+      console.log(error);
+      res.end('{"error" : "Update failed", "status" : 404}');
+    }
+    console.log('File uploaded successfully.');
+    res.end('{"success" : "Updated Successfully", "status" : 200}');
+
+  });
+});
+
 
 //Save editor JSON to DB
 //Saves to 'graph' db in mongo

@@ -22,7 +22,7 @@ const s3 = new aws.S3({
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: 'oasys-education',
+    bucket: 'oasys-space',
     acl: 'public-read',
     key: function (request, file, cb) {
       console.log(file);
@@ -245,10 +245,11 @@ app.post('/upload', function (request, response, next) {
   upload(request, response, function (error) {
     if (error) {
       console.log(error);
-      res.end('{"error" : "Update failed", "status" : 404}');
+      response.end('{"error" : "Update failed", "status" : 404}');
     }
     console.log('File uploaded successfully.');
-    res.end('{"success" : "Updated Successfully", "status" : 200}');
+    console.log(response);
+    response.end('{"success" : "Updated Successfully", "status" : 200}');
 
   });
 });

@@ -169,6 +169,31 @@ app.post('/:userId/:contentId/rate/:rating', function (req, res) {
 
 });
 
+/* 
+Upload Unique Username
+*/
+app.post('/:userId/new/:username/', function (req, res) {
+
+  userId = req.params.userId;
+  username = req.params.username;
+
+  mongo.uploadUsername(userId, username, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+
+    else if (!result){
+      console.log("wack joe");
+      res.json({"userNameExists":true}); 
+    }
+    else{
+      res.json({"userNameExists":false})
+    }
+  });
+
+});
+
 /*
 Write data into to “contents” db
 */

@@ -18,6 +18,28 @@ var exports = module.exports = {};
 Reading from Mongo (helper functions)
 ***************************/
 
+// Uploads username to "users" db 
+const newUsername = function(db, userId, username, callback) {
+  const collection = db.collection('users');
+  collection.find({'NAME': username}).toArray(function(err, docs) {
+    if (err) throw err;
+    
+    if(docs.length>0) {
+      console.log("my docs");
+      console.log(docs);
+      callback();
+    }
+    else{
+      collection.insertOne({"UID": userId, 'NAME': username, "PIC": ''}, function(err, result) {
+        if (err) throw err;
+        console.log(result);
+        callback(result);
+      });  
+    }
+  });  
+};
+
+
 // Returns picture, title, description, tags, and url from "contents" db with published flag
 const getPreview = function(db, callback) {
   const collection = db.collection('contents');
@@ -202,6 +224,22 @@ exports.readRatingFromMongo = function(userId, contentId, callback) {
     }
   });
 };
+
+exports.uploadUsername = function(userId, username, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else{
+      console.log("Connected successfully to server");
+      newUsername(db, userId, username, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
+
 
 
 

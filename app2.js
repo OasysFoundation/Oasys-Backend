@@ -26,7 +26,8 @@ const upload = multer({
     acl: 'public-read',
     key: function (request, file, cb) {
       console.log(file);
-      cb(null, file.originalname);
+      //Unique identifier
+      cb(null, Date.now().toString());
     }
   })
 }).array('upload', 1);
@@ -184,7 +185,6 @@ app.post('/:userId/new/:username/', function (req, res) {
     }
 
     else if (!result){
-      console.log("wack joe");
       res.json({"userNameExists":true}); 
     }
     else{
@@ -266,16 +266,35 @@ function getRating(userId,contentId,extra,callback){
   });
 }
 
-app.post('/upload', function (request, response, next) {
-  upload(request, response, function (error) {
+app.post('/:userId/uploadProfilePic', function (request, response) {
+
+  userId = request.params.userId;
+  const files = request.files; // file passed from client
+  const meta = request.data; // all other values passed from the client, like name, etc..
+
+  console.log(files);
+  console.log(meta);
+
+
+  upload(request, response, function (error, success) {
     if (error) {
       console.log(error);
       response.end('{"error" : "Update failed", "status" : 404}');
     }
+    console.log(request.files)
     console.log('File uploaded successfully.');
-    console.log(response);
-    response.end('{"success" : "Updated Successfully", "status" : 200}');
 
+    var newUrl = request.files[0].location;
+
+    mongo.uploadPicture(userId, newUrl, function(result,err) { 
+      if (err){
+        console.log(err);
+        response.end("Unexpected Error from Db");
+      }
+      else {
+        response.json({"success":true}); 
+      }
+    });
   });
 });
 

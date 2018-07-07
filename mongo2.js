@@ -18,6 +18,19 @@ var exports = module.exports = {};
 Reading from Mongo (helper functions)
 ***************************/
 
+// Uploads picture to "users" db 
+const newPicture = function(db, userId, newUrl, callback) {
+  const collection = db.collection('users');
+  collection.update({"UID": userId}, { $set: { "PIC" : newUrl } }, {"upsert": true}, function(err, result) {
+    if (err) throw err;
+    else{
+      console.log("Update successful");
+      callback(result);
+    }
+  });      
+};
+
+
 // Uploads username to "users" db 
 const newUsername = function(db, userId, username, callback) {
   const collection = db.collection('users');
@@ -231,6 +244,20 @@ exports.uploadUsername = function(userId, username, callback) {
     else{
       console.log("Connected successfully to server");
       newUsername(db, userId, username, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
+exports.uploadPicture = function(userId, newUrl, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else{
+      console.log("Connected successfully to server");
+      newPicture(db, userId, newUrl, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

@@ -298,6 +298,21 @@ app.post('/:userId/uploadProfilePic', function (request, response) {
   });
 });
 
+app.get('/:userId/profile', function (request, response) {
+
+  userId = request.params.userId;
+
+  mongo.getProfile(userId, function(result,err) { 
+    if (err){
+      console.log(err);
+      response.end("Unexpected Error from Db");
+    }
+    else {
+      response.json(result); 
+    }
+  });
+});
+
 
 //Save editor JSON to DB
 //Saves to 'graph' db in mongo

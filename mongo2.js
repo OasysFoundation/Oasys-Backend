@@ -18,6 +18,16 @@ var exports = module.exports = {};
 Reading from Mongo (helper functions)
 ***************************/
 
+
+// Uploads picture to "users" db 
+const getProfileData = function(db, userId, callback) {
+  const collection = db.collection('users');
+  collection.find({'UID': userId}).toArray(function(err, docs) {
+    if (err) throw err;
+    callback(docs);
+  });    
+};
+
 // Uploads picture to "users" db 
 const newPicture = function(db, userId, newUrl, callback) {
   const collection = db.collection('users');
@@ -266,8 +276,18 @@ exports.uploadPicture = function(userId, newUrl, callback) {
   });
 };
 
-
-
-
+exports.getProfile = function(userId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else{
+      console.log("Connected successfully to server");
+      getProfileData(db, userId, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
 
 

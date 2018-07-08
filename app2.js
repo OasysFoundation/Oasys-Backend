@@ -207,8 +207,10 @@ app.post('/:userId/:contentId/save', function (req, res) {
       res.end("Error: Request body is empty.");
     }
     else if(req.body.published==1){
-      if(!req.body.picture || !req.body.title || !req.body.description || !req.body.tags )
+      if(!req.body.picture || !req.body.title || !req.body.description || !req.body.tags ){
+        console.log("NOSIRE");
         res.end("You cannot publish unless you provide the picture url, title, description, and tags");
+      }
       else {
         jsonBody =req.body;
         mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 
@@ -225,6 +227,7 @@ app.post('/:userId/:contentId/save', function (req, res) {
 
     }
     else{
+      console.log("STEP 4: NOT EXPECTED");
       jsonBody =req.body;
       mongo.writeContentToMongo("save", jsonBody, userId, contentId, function(result,err) { 
         if (err){
@@ -298,6 +301,35 @@ app.post('/:userId/uploadProfilePic', function (request, response) {
   });
 });
 
+app.post('/:userId/:contentId/uploadTitle', function (request, response) {
+
+  userId = request.params.userId;
+  contentId = request.params.contentId;
+
+  upload(request, response, function (error, success) {
+    if (error) {
+      console.log(error);
+      response.end('{"error" : "Update failed", "status" : 404}');
+    }
+    console.log(request.files)
+    console.log('File uploaded successfully.');
+
+    var newUrl = request.files[0].location;
+    console.log(newUrl);
+
+    mongo.uploadTitlePicture(userId, contentId, newUrl, function(result,err) { 
+      if (err){
+        console.log(err);
+        response.end("Unexpected Error from Db");
+      }
+      else {
+        console.log("WE MADE IT")
+        response.json({"success":true}); 
+      }
+    });
+  });
+});
+
 app.get('/:userId/profile', function (request, response) {
 
   userId = request.params.userId;
@@ -312,7 +344,6 @@ app.get('/:userId/profile', function (request, response) {
     }
   });
 });
-
 
 //Save editor JSON to DB
 //Saves to 'graph' db in mongo

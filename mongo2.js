@@ -19,7 +19,7 @@ Reading from Mongo (helper functions)
 ***************************/
 
 
-// Uploads picture to "users" db 
+// Gets profile data from "users" db 
 const getProfileData = function(db, userId, callback) {
   const collection = db.collection('users');
   collection.find({'UID': userId}).toArray(function(err, docs) {
@@ -40,6 +40,21 @@ const newPicture = function(db, userId, newUrl, callback) {
   });      
 };
 
+const newTitlePic = function(db, userId, contentId, newUrl, callback) {
+  const collection = db.collection('contents');
+  console.log("BOUT TO UPDATE");
+
+  collection.update({"contentId": contentId, "userId":userId}, { $set: { "picture" : newUrl } }, {"upsert": true}, function(err, result) {
+    if (err) {
+      console.log(err);
+      throw err;
+    }
+    else{
+      console.log("Update successful");
+      callback(result);
+    }
+  });     
+};
 
 // Uploads username to "users" db 
 const newUsername = function(db, userId, username, callback) {
@@ -276,6 +291,20 @@ exports.uploadPicture = function(userId, newUrl, callback) {
   });
 };
 
+exports.uploadTitlePicture = function(userId, contentId, newUrl, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else{
+      console.log("Connected successfully to server");
+      newTitlePic(db, userId, contentId, newUrl, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
 exports.getProfile = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
@@ -289,5 +318,3 @@ exports.getProfile = function(userId, callback) {
     }
   });
 };
-
-

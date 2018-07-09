@@ -101,7 +101,7 @@ const findContent = function(userId, contentId, db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
-const findConmments = function(userId, contentId, db, callback) {
+const findComments = function(userId, contentId, db, callback) {
   const collection = db.collection('comments');
   collection.find({'contentId': contentId}).toArray(function(err, result) {
       if (err) throw err;
@@ -293,7 +293,7 @@ exports.readCommentsFromMongo = function(userId, contentId, callback) {
     if (err) throw err;
     else {   
       console.log("Connected successfully to db");
-      findConmments(userId, contentId, db, function(result,err) {
+      findComments(userId, contentId, db, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

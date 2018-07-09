@@ -133,7 +133,7 @@ app.get('/user/:userId/:contentId', function (req, res) {
 Loads avg rating of content from "ratings" db
 */
 
-app.get('/:userId/:contentId/avgRating', function (req, res) {
+app.get('avgRating/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
@@ -152,7 +152,7 @@ app.get('/:userId/:contentId/avgRating', function (req, res) {
 Write rating for content into "ratings" db
 */
 
-app.post('/:userId/:contentId/rate/:rating', function (req, res) {
+app.post('/rate/:userId/:contentId/:rating', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
@@ -173,7 +173,7 @@ app.post('/:userId/:contentId/rate/:rating', function (req, res) {
 /* 
 Upload Unique Username
 */
-app.post('/:userId/new/:username/', function (req, res) {
+app.post('/newUsername/:userId/:username/', function (req, res) {
 
   userId = req.params.userId;
   username = req.params.username;
@@ -198,7 +198,7 @@ app.post('/:userId/new/:username/', function (req, res) {
 Write data into to “contents” db
 */
 
-app.post('/:userId/:contentId/save', function (req, res) {
+app.post('/save/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
@@ -269,7 +269,7 @@ function getRating(userId,contentId,extra,callback){
   });
 }
 
-app.post('/:userId/uploadProfilePic', function (request, response) {
+app.post('/uploadProfilePic/:userId', function (request, response) {
 
   userId = request.params.userId;
   const files = request.files; // file passed from client
@@ -301,7 +301,7 @@ app.post('/:userId/uploadProfilePic', function (request, response) {
   });
 });
 
-app.post('/:userId/:contentId/uploadTitle', function (request, response) {
+app.post('/uploadTitle/:userId/:contentId', function (request, response) {
 
   userId = request.params.userId;
   contentId = request.params.contentId;
@@ -330,7 +330,7 @@ app.post('/:userId/:contentId/uploadTitle', function (request, response) {
   });
 });
 
-app.get('/:userId/profile', function (request, response) {
+app.get('profile/:userId', function (request, response) {
 
   userId = request.params.userId;
 
@@ -350,7 +350,7 @@ app.get('/:userId/profile', function (request, response) {
 Write data into to "comments" db
 */
 
-app.post('/:userId/:contentId/comment', function (req, res) {
+app.post('/comment/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
@@ -374,7 +374,7 @@ app.post('/:userId/:contentId/comment', function (req, res) {
 
 });
 
-app.get('/:userId/:contentId/comments', function (req, res) {
+app.get('/comment/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;

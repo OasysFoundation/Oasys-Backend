@@ -345,6 +345,53 @@ app.get('/:userId/profile', function (request, response) {
   });
 });
 
+
+/*
+Write data into to "comments" db
+*/
+
+app.post('/:userId/:contentId/comment', function (req, res) {
+
+  userId = req.params.userId;
+  contentId = req.params.contentId;
+
+   if(!req.body){
+      res.end("Error: Request body is empty.");
+    }
+    else{
+      jsonBody =req.body;
+      mongo.writeCommentToMongo(jsonBody, userId, contentId, function(result,err) { 
+        if (err){
+          console.log(err);
+          res.end("Unexpected Error from Db");
+        }
+        else{
+          console.log(result);
+          res.send(result); 
+        }
+      });
+    }
+
+});
+
+app.get('/:userId/:contentId/comments', function (req, res) {
+
+  userId = req.params.userId;
+  contentId = req.params.contentId;
+
+  mongo.readCommentsFromMongo(userId, contentId, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
+
 //testing new slack integration
 
 //Save editor JSON to DB

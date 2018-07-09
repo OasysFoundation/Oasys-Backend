@@ -100,6 +100,18 @@ const findContent = function(userId, contentId, db, callback) {
     });
 }
 
+// Returns full JSON of specified user id and content id
+const findConmments = function(userId, contentId, db, callback) {
+  const collection = db.collection('comments');
+  collection.find({'contentId': contentId}).toArray(function(err, result) {
+      if (err) throw err;
+      console.log("db response: ")
+      console.log(result)
+      callback(result);
+    });
+}
+
+
 
 // Returns all ratings for given content Id
 const findRating = function(db, userId, contentId, callback) {
@@ -133,6 +145,19 @@ const saveContent = function(db, userId, contentId, data, callback) {
       console.log("Update successful");
       callback(result);
     }
+  });  
+}
+
+// saves content to "contents" db
+const saveComment = function(db, userId, contentId, data, callback) {
+  console.log(data);
+  var time = data.time;
+  var newComment = data.comment;
+  const collection = db.collection('comments');
+  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment}, function(err, result) {
+    if (err) throw err;
+    console.log(result);
+    callback(result);
   });  
 }
 
@@ -201,6 +226,22 @@ exports.writeContentToMongo = function(status, data, userId, contentId, callback
   }
 };
 
+// Write to "contents" db
+exports.writeCommentToMongo = function(data, userId, contentId, callback) {
+    MongoClient.connect(url, function(err, db) {
+      if (err) throw err;
+      else {
+        console.log("Connected successfully to server");
+        saveComment(db, userId, contentId, data, function(result,err) {
+          if (err) throw err;
+           db.close();
+           callback(result);
+          });
+      }
+    });
+};
+
+
 // Write to "ratings" db
 exports.WriteRatingToMongo = function(userId, contentId, rating, callback) {
   MongoClient.connect(url, function(err, db) {
@@ -247,6 +288,19 @@ exports.readContentFromMongo = function(userId, contentId, callback) {
   });
 };
 
+exports.readCommentsFromMongo = function(userId, contentId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      findConmments(userId, contentId, db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
 
 //Reads from "ratings" db
 exports.readRatingFromMongo = function(userId, contentId, callback) {

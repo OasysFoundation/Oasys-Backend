@@ -153,8 +153,9 @@ const saveComment = function(db, userId, contentId, data, callback) {
   console.log(data);
   var time = data.time;
   var newComment = data.comment;
+  var parent = data.parent;
   const collection = db.collection('comments');
-  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment}, function(err, result) {
+  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment, "parent": parent}, function(err, result) {
     if (err) throw err;
     console.log(result);
     callback(result);

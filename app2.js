@@ -207,7 +207,7 @@ app.post('/save/:userId/:contentId', function (req, res) {
       res.end("Error: Request body is empty.");
     }
     else if(req.body.published==1){
-      if(!req.body.picture || !req.body.title || !req.body.description || !req.body.tags ){
+      if(!req.body.title || !req.body.description || !req.body.tags ){
         console.log("NOSIRE");
         res.end("You cannot publish unless you provide the picture url, title, description, and tags");
       }

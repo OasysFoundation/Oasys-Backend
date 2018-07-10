@@ -167,13 +167,12 @@ const publishContent = function(db, userId, contentId, data, callback) {
   console.log(data);
   newData = data.data;
   title = data.title;
-  picture = data.picture;
   published = data.published;
   description = data.description;
   tags = data.tags;
 
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId, "userId": userId}, { $set: { "data" : newData, "title": title, "picture": picture, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+  collection.update({"contentId": contentId, "userId": userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
     if (err) throw err;
     else{
       console.log("Update successful");

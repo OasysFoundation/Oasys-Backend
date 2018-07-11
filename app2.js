@@ -383,12 +383,14 @@ app.post('/comment/:userId/:contentId', function (req, res) {
 /*
 Get Comments for this unique piece of content from "comments" db
 */
-app.get('/comment/:userId/:contentId', function (req, res) {
+app.get('/comment/:userId/:contentId/:slideNumber', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
+  slideNumber = req.params.slideNumber;
 
-  mongo.readCommentsFromMongo(userId, contentId, function(result,err) { 
+
+  mongo.readCommentsFromMongo(userId, contentId, slideNumber, function(result,err) { 
     if (err){
       console.log(err);
       res.end("Unexpected Error from Db");

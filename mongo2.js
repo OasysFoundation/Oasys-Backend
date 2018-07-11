@@ -101,9 +101,9 @@ const findContent = function(userId, contentId, db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
-const findComments = function(userId, contentId, db, callback) {
+const findComments = function(userId, contentId, slideNumber, db, callback) {
   const collection = db.collection('comments');
-  collection.find({'contentId': contentId}).toArray(function(err, result) {
+  collection.find({'contentId': contentId, 'slideNumber': slideNumber}).toArray(function(err, result) {
       if (err) throw err;
       console.log("db response: ")
       console.log(result)
@@ -174,8 +174,9 @@ const saveComment = function(db, userId, contentId, data, callback) {
   var time = data.time;
   var newComment = data.comment;
   var parent = data.parent;
+  var slideNumber = data.slideNumber;
   const collection = db.collection('comments');
-  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment, "parent": parent}, function(err, result) {
+  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment, "parent": parent, "slideNumber": slideNumber}, function(err, result) {
     if (err) throw err;
     console.log(result);
     callback(result);
@@ -344,12 +345,12 @@ exports.readContentFromMongo = function(userId, contentId, callback) {
   });
 };
 
-exports.readCommentsFromMongo = function(userId, contentId, callback) {
+exports.readCommentsFromMongo = function(userId, contentId, slideNumber, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
       console.log("Connected successfully to db");
-      findComments(userId, contentId, db, function(result,err) {
+      findComments(userId, contentId, slideNumber, db, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

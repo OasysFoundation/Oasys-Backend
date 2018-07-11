@@ -111,7 +111,27 @@ const findComments = function(userId, contentId, db, callback) {
     });
 }
 
+// Returns full JSON of specified user id and content id
+const findAnalyticsUsers = function(userId, db, callback) {
+  const collection = db.collection('analytics');
+  collection.find({'accessUserId': userId}).toArray(function(err, result) {
+      if (err) throw err;
+      console.log("db response: ")
+      console.log(result)
+      callback(result);
+    });
+}
 
+// Returns full JSON of specified user id and content id
+const findAnalyticsContents = function(userId, contentId, db, callback) {
+  const collection = db.collection('analytics');
+  collection.find({'contentId': contentId, "contentUserId" :userId }).toArray(function(err, result) {
+      if (err) throw err;
+      console.log("db response: ")
+      console.log(result)
+      callback(result);
+    });
+}
 
 // Returns all ratings for given content Id
 const findRating = function(db, userId, contentId, callback) {
@@ -424,3 +444,35 @@ exports.writeAnalyticsDataToMongo = function(data, callback) {
       }
     });
 };
+
+exports.readAnalyticsFromUsersMongo = function(userId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      findAnalyticsUsers(userId, db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
+exports.readAnalyticsFromContentsMongo = function(userId, contentId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      findAnalyticsContents(userId, contentId, db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
+
+
+

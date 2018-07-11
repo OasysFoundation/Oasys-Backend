@@ -425,6 +425,45 @@ app.post('/saveUserContentAccess', function (req, res) {
 
 });
 
+/*
+Get Analytics data for content from "analytics" db
+*/
+app.get('/getAllContentsForUser/:userId/', function (req, res) {
+
+  userId = req.params.userId;
+
+  mongo.readAnalyticsFromUsersMongo(userId, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
+/*
+Get Analytics data for user from "analytics" db
+*/
+app.get('/getContentInfo/:userId/:contentId', function (req, res) {
+
+  userId = req.params.userId;
+  contentId = req.params.contentId;
+
+  mongo.readAnalyticsFromContentsMongo(userId, contentId, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
 //testing new slack integration
 
 //Save editor JSON to DB

@@ -162,6 +162,42 @@ const saveComment = function(db, userId, contentId, data, callback) {
   });  
 }
 
+// saves content to "contents" db
+const saveAnalytics = function(db, data, callback) {
+  console.log(data);
+  var startTime = data.startTime;
+  var endTime = data.endTime;
+  var contentId = data.contentId;
+  var contentUserId = data.contentUserId;
+  var accessUserId = data.accessUserId;
+  var accessTimes = data.accessTimes;
+  const collection = db.collection('analytics');
+
+  collection.find({"startTime": startTime, "contentId": contentId, "contentUserId": contentUserId}).toArray(function(err, docs) {
+      if (err) throw err;
+      
+      if(docs.length>0) {
+       collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "accessTimes": accessTimes} }, {"upsert": false}, function(err, result) {
+          if (err) throw err;
+          else{
+            console.log("Update successful");
+            callback(result);
+          }
+        });  
+      }
+      else{
+        collection.insertOne({"startTime": startTime, "endTime": endTime, "contentId": contentId, 'contentUserId': contentUserId, "accessUserId": accessUserId, "accessTimes":accessTimes}, function(err, result) {
+          if (err) throw err;
+          else{
+          console.log("insert successful")
+          console.log(result);
+          callback(result);
+          }
+        });        
+      }
+    });  
+}
+
 // saves content including title,picture,url etc. and publishes content so preview mode can grab it
 const publishContent = function(db, userId, contentId, data, callback) {
   console.log(data);
@@ -371,4 +407,20 @@ exports.getProfile = function(userId, callback) {
         });
     }
   });
+};
+
+
+// Write to "contents" db
+exports.writeAnalyticsDataToMongo = function(data, callback) {
+    MongoClient.connect(url, function(err, db) {
+      if (err) throw err;
+      else {
+        console.log("Connected successfully to server");
+        saveAnalytics(db, data, function(result,err) {
+          if (err) throw err;
+           db.close();
+           callback(result);
+          });
+      }
+    });
 };

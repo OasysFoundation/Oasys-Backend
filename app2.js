@@ -46,7 +46,6 @@ app.use(function(req, res, next) {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-//TODO: Setup https
 app.get('/', (req, res) => {
   res.send('Documentation: https://docs.google.com/document/d/1aRe4420DifJNUmK-BPdQocBaC6b8LkowPVv4TJN0jJQ/edit?usp=sharing');
 });
@@ -143,15 +142,12 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
     console.log(response);
     res.json(response[0]);
   })
-  //console.log(getRating(userId,contentId));
-  //getRating(userId,contentId,res);
 
 });
 
 /*
 Write rating for content into "ratings" db
 */
-
 app.post('/rate/:userId/:contentId/:rating', function (req, res) {
 
   userId = req.params.userId;
@@ -171,7 +167,7 @@ app.post('/rate/:userId/:contentId/:rating', function (req, res) {
 });
 
 /* 
-Upload Unique Username
+Upload Unique Username into "users" db
 */
 app.post('/newUsername/:userId/:username/', function (req, res) {
 
@@ -197,7 +193,6 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
 /*
 Write data into to “contents” db
 */
-
 app.post('/save/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
@@ -243,7 +238,9 @@ app.post('/save/:userId/:contentId', function (req, res) {
 
 });
 
-
+/*
+Helper function for calculating rating avg
+*/
 function getRating(userId,contentId,extra,callback){
   mongo.readRatingFromMongo(userId, contentId, function(result,err) { 
       if (err){
@@ -269,6 +266,9 @@ function getRating(userId,contentId,extra,callback){
   });
 }
 
+/*
+Upload profile picture to "users" db
+*/
 app.post('/uploadProfilePic/:userId', function (request, response) {
 
   userId = request.params.userId;
@@ -301,6 +301,9 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
   });
 });
 
+/*
+Upload picture to "contents" db for cover photo
+*/
 app.post('/uploadTitle/:userId/:contentId', function (request, response) {
 
   userId = request.params.userId;
@@ -330,6 +333,9 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
   });
 });
 
+/*
+Get all information from "users" db
+*/
 app.get('profile/:userId', function (request, response) {
 
   userId = request.params.userId;
@@ -374,6 +380,9 @@ app.post('/comment/:userId/:contentId', function (req, res) {
 
 });
 
+/*
+Get Comments for this unique piece of content from "comments" db
+*/
 app.get('/comment/:userId/:contentId', function (req, res) {
 
   userId = req.params.userId;
@@ -391,6 +400,30 @@ app.get('/comment/:userId/:contentId', function (req, res) {
 
 });
 
+/*
+Write data into to "analytics" db
+*/
+
+app.post('/saveUserContentAccess', function (req, res) {
+
+   if(!req.body){
+      res.end("Error: Request body is empty.");
+    }
+    else{
+      jsonBody =req.body;
+      mongo.writeAnalyticsDataToMongo(jsonBody, function(result,err) { 
+        if (err){
+          console.log(err);
+          res.end("Unexpected Error from Db");
+        }
+        else{
+          console.log(result);
+          res.send(result); 
+        }
+      });
+    }
+
+});
 
 //testing new slack integration
 

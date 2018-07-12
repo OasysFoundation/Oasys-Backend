@@ -83,7 +83,7 @@ const newUsername = function(db, userId, username, callback) {
 // Returns picture, title, description, tags, and url from "contents" db with published flag
 const getPreview = function(db, callback) {
   const collection = db.collection('contents');
-  collection.find({'published': 1}).toArray(function(err, result) {
+  collection.find({'published': 1, 'featured' : true}).toArray(function(err, result) {
       if (err) throw err;
       console.log("db response: ")
       console.log(result)

@@ -447,6 +447,25 @@ app.get('/getAllContentsForUser/:userId/', function (req, res) {
 });
 
 /*
+Get Analytics data for content CREATOR from "analytics" db
+*/
+app.get('/getAllContentsForCreator/:userId/', function (req, res) {
+
+  userId = req.params.userId;
+
+  mongo.readAnalyticsFromCreatorMongo(userId, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
+/*
 Get Analytics data for user from "analytics" db
 */
 app.get('/getContentInfo/:userId/:contentId', function (req, res) {

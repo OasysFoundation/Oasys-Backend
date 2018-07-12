@@ -125,6 +125,17 @@ const findAnalyticsUsers = function(userId, db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
+const findAnalyticsCreator = function(userId, db, callback) {
+  const collection = db.collection('analytics');
+  collection.find({'contentUserId': userId}).toArray(function(err, result) {
+      if (err) throw err;
+      console.log("db response: ")
+      console.log(result)
+      callback(result);
+    });
+}
+
+// Returns full JSON of specified user id and content id
 const findAnalyticsContents = function(userId, contentId, db, callback) {
   const collection = db.collection('analytics');
   collection.find({'contentId': contentId, "contentUserId" :userId }).toArray(function(err, result) {
@@ -500,6 +511,19 @@ exports.readAnalyticsFromContentsMongo = function(userId, contentId, callback) {
   });
 };
 
+exports.readAnalyticsFromCreatorMongo = function(userId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      findAnalyticsCreator(userId, db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
 
 
 

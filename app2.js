@@ -107,6 +107,61 @@ app.get('/GetContentsPreview', function (req, res) {
   });
 });
 
+app.get('/GetUserContentsPreview', function (req, res) {
+  mongo.readUserPreviewFromMongo(function(result, err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else {
+      trueResult = [];
+      console.log(result.length);
+      for(i = 0; i < result.length; i++){
+        //make call to avg rating .then{}
+        var userId=result[i].userId;
+        var contentId=result[i].contentId;
+
+        getRating(userId,contentId, i, function(response,err){
+          avg=response[0];
+          i = response[1];
+          console.log("response inside");
+          console.log(response);
+          console.log(i);
+          if (err) {
+            res.end("Unexpected Error from Db");
+          }
+          else if(avg){
+            console.log("MADE IT INSIDE");
+            trueResult.push({
+             "picture" :      result[i].picture,
+             "title" :        result[i].title,
+             "description" :  result[i].description,
+             "tags" :         result[i].tags,
+             "userId" :       result[i].userId,
+             "contentId":     result[i].contentId,
+             "rating" :       avg 
+            });
+          }
+          else{
+            trueResult.push({
+             "picture" :      result[i].picture,
+             "title" :        result[i].title,
+             "description" :  result[i].description,
+             "tags" :         result[i].tags,
+             "userId" :       result[i].userId,
+             "contentId":     result[i].contentId,
+            });
+          }
+          if(trueResult.length==(result.length))
+            res.json(trueResult); 
+
+        })
+      }
+    }
+  });
+});
+
+
 /*
 Loads full JSON of selected experience from “contents” db
 */

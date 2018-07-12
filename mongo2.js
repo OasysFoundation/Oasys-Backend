@@ -91,6 +91,17 @@ const getPreview = function(db, callback) {
     });
 }
 
+// Returns picture, title, description, tags, and url from "contents" db with published flag
+const getUserPreview = function(db, callback) {
+  const collection = db.collection('contents');
+  collection.find().toArray(function(err, result) {
+      if (err) throw err;
+      console.log("db response: ")
+      console.log(result)
+      callback(result);
+    });
+}
+
 // Returns full JSON of specified user id and content id
 const findContent = function(userId, contentId, db, callback) {
   const collection = db.collection('contents');
@@ -257,8 +268,8 @@ const saveAnalytics = function(db, data, callback) {
 const publishContent = function(db, userId, contentId, data, callback) {
   console.log(data);
   var newData = data.data;
-  for (var i = 0; i < newData; i++){
-    newData[0].thumb=null;
+  for (var i = 0; i < newData.length; i++){
+    newData[0].thumb='null';
   }
   var title = data.title;
   var published = data.published;
@@ -359,6 +370,21 @@ exports.readPreviewFromMongo = function(callback) {
     else {   
       console.log("Connected successfully to db");
       getPreview(db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
+
+// Reads from "contents" db
+exports.readUserPreviewFromMongo = function(callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      getUserPreview(db, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

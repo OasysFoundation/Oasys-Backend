@@ -178,7 +178,7 @@ const saveContent = function(db, userId, contentId, data, callback) {
 
 
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId, "userid":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+  collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
     if (err) {
       console.log(err)
       throw err;

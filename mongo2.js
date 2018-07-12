@@ -22,8 +22,10 @@ Reading from Mongo (helper functions)
 // Gets profile data from "users" db 
 const getProfileData = function(db, userId, callback) {
   const collection = db.collection('users');
+  console.log(userId);
   collection.find({'UID': userId}).toArray(function(err, docs) {
     if (err) throw err;
+    console.log(docs);
     callback(docs);
   });    
 };
@@ -103,7 +105,7 @@ const findContent = function(userId, contentId, db, callback) {
 // Returns full JSON of specified user id and content id
 const findComments = function(userId, contentId, slideNumber, db, callback) {
   const collection = db.collection('comments');
-  collection.find({'contentId': contentId, 'slideNumber': slideNumber}).toArray(function(err, result) {
+  collection.find({'contentId': contentId, 'userId': userId,'slideNumber': slideNumber}).toArray(function(err, result) {
       if (err) throw err;
       console.log("db response: ")
       console.log(result)
@@ -175,8 +177,9 @@ const saveComment = function(db, userId, contentId, data, callback) {
   var newComment = data.comment;
   var parent = data.parent;
   var slideNumber = data.slideNumber;
+  var accessUser = data.accessUser;
   const collection = db.collection('comments');
-  collection.insertOne({"contentId": contentId, 'userId': userId, "time": time, "comment":newComment, "parent": parent, "slideNumber": slideNumber}, function(err, result) {
+  collection.insertOne({"contentId": contentId, 'userId': userId, "accessUser":accessUser, "time": time, "comment":newComment, "parent": parent, "slideNumber": slideNumber}, function(err, result) {
     if (err) throw err;
     console.log(result);
     callback(result);

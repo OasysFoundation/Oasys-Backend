@@ -336,7 +336,7 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
 /*
 Get all information from "users" db
 */
-app.get('profile/:userId', function (request, response) {
+app.get('/profile/:userId', function (request, response) {
 
   userId = request.params.userId;
 

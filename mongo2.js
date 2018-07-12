@@ -158,11 +158,31 @@ const writeRating = function(db, userId, contentId, rating, callback) {
 
 // saves content to "contents" db
 const saveContent = function(db, userId, contentId, data, callback) {
-  console.log(data);
-  newData = data.data;
+  var newData = data.data;
+  for (var i = 0; i < newData.length; i++){
+    newData[0].thumb='null';
+  }
+  var title = data.title;
+  var published = 0;
+  var description = data.description;
+  var tags = data.tags;
+
+  console.log(contentId);
+  console.log(userId);
+  console.log(newData);
+  console.log(title);
+  console.log(description);
+  console.log(published);
+  console.log(tags);
+
+
+
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId}, {"userid":userId}, { $set: { "data" : newData } }, {"upsert": true}, function(err, result) {
-    if (err) throw err;
+  collection.update({"contentId": contentId, "userid":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+    if (err) {
+      console.log(err)
+      throw err;
+    }
     else{
       console.log("Update successful");
       callback(result);
@@ -225,11 +245,14 @@ const saveAnalytics = function(db, data, callback) {
 // saves content including title,picture,url etc. and publishes content so preview mode can grab it
 const publishContent = function(db, userId, contentId, data, callback) {
   console.log(data);
-  newData = data.data;
-  title = data.title;
-  published = data.published;
-  description = data.description;
-  tags = data.tags;
+  var newData = data.data;
+  for (var i = 0; i < newData; i++){
+    newData[0].thumb=null;
+  }
+  var title = data.title;
+  var published = data.published;
+  var description = data.description;
+  var tags = data.tags;
 
   const collection = db.collection('contents');
   collection.update({"contentId": contentId, "userId": userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {

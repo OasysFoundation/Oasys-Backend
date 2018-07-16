@@ -540,6 +540,41 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
 
 });
 
+/*
+Get Analytics data for user from "analytics" db
+*/
+app.get('/getAllComments', function (req, res) {
+
+  mongo.readAllCommentsFromMongo(function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      
+      res.json(result); 
+    }
+  });
+
+});
+
+/*
+Get Analytics data for user from "analytics" db
+*/
+app.get('/getAllRatings', function (req, res) {
+
+  mongo.readAllRatingsFromMongo(function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
 //testing new slack integration
 
 //Save editor JSON to DB

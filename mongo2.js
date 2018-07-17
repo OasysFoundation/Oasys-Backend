@@ -191,7 +191,7 @@ const findRating = function(db, userId, contentId, callback) {
 }
 
 // writes rating to ratings db
-const writeRating = function(db, userId, contentId, rating, callback) {
+const writeRating = function(db, userId, contentId, rating, accessUser, callback) {
   const collection = db.collection('ratings');
   rating = parseInt(rating);
   collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating, "accessUser": accessUser}, function(err, result) {

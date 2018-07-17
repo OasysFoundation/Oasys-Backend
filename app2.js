@@ -210,6 +210,8 @@ app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
   rating = req.params.rating;
   accessUser = req.params.accessUser;
 
+  console.log("Test 1");
+
   mongo.WriteRatingToMongo(userId, contentId, rating, accessUser, function(result,err) { 
     if (err){
       console.log(err);

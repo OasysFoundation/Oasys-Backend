@@ -543,15 +543,17 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
 /*
 Get Analytics data for user from "analytics" db
 */
-app.get('/getAllComments', function (req, res) {
+app.get('/getAllComments/:userId', function (req, res) {
 
-  mongo.readAllCommentsFromMongo(function(result,err) { 
+  userId = req.params.userId;
+
+  mongo.readAllCommentsFromMongo(userId, function(result,err) { 
     if (err){
       console.log(err);
       res.end("Unexpected Error from Db");
     }
     else{
-      
+
       res.json(result); 
     }
   });
@@ -561,9 +563,11 @@ app.get('/getAllComments', function (req, res) {
 /*
 Get Analytics data for user from "analytics" db
 */
-app.get('/getAllRatings', function (req, res) {
+app.get('/getAllRatings/:userId', function (req, res) {
 
-  mongo.readAllRatingsFromMongo(function(result,err) { 
+  userId = req.params.userId;
+
+  mongo.readAllRatingsFromMongo(userId, function(result,err) { 
     if (err){
       console.log(err);
       res.end("Unexpected Error from Db");
@@ -573,6 +577,26 @@ app.get('/getAllRatings', function (req, res) {
     }
   });
 
+});
+
+
+/*
+Upload picture from quill to db
+*/
+app.post('/uploadQuillPic', function (request, response) {
+
+  upload(request, response, function (error, success) {
+    if (error) {
+      console.log(error);
+      response.end('{"error" : "Update failed", "status" : 404}');
+    }
+    console.log(request.files)
+    console.log('File uploaded successfully.');
+
+    var newUrl = request.files[0].location;
+    console.log(newUrl);
+    response.json(newUrl);
+  });
 });
 
 //testing new slack integration

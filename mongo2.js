@@ -136,9 +136,9 @@ const findAnalyticsUsers = function(userId, db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
-const findAllComments = function(db, callback) {
+const findAllComments = function(userId, db, callback) {
   const collection = db.collection('comments');
-  collection.find().toArray(function(err, result) {
+  collection.find({'userId': userId}).toArray(function(err, result) {
       if (err) throw err;
       console.log("db response: ")
       console.log(result)
@@ -147,9 +147,9 @@ const findAllComments = function(db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
-const findAllRatings = function(db, callback) {
+const findAllRatings = function(userId, db, callback) {
   const collection = db.collection('ratings');
-  collection.find().toArray(function(err, result) {
+  collection.find({'userId': userId}).toArray(function(err, result) {
       if (err) throw err;
       console.log("db response: ")
       console.log(result)
@@ -574,12 +574,12 @@ exports.readAnalyticsFromCreatorMongo = function(userId, callback) {
   });
 };
 
-exports.readAllCommentsFromMongo = function(callback) {
+exports.readAllCommentsFromMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
       console.log("Connected successfully to db");
-      findAllComments(db, function(result,err) {
+      findAllComments(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);
@@ -588,12 +588,12 @@ exports.readAllCommentsFromMongo = function(callback) {
   });
 };
 
-exports.readAllRatingsFromMongo = function(callback) {
+exports.readAllRatingsFromMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
       console.log("Connected successfully to db");
-      findAllRatings(db, function(result,err) {
+      findAllRatings(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

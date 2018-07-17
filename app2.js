@@ -203,13 +203,14 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
 /*
 Write rating for content into "ratings" db
 */
-app.post('/rate/:userId/:contentId/:rating', function (req, res) {
+app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
   rating = req.params.rating;
+  accessUser = req.params.accessUser;
 
-  mongo.WriteRatingToMongo(userId, contentId, rating, function(result,err) { 
+  mongo.WriteRatingToMongo(userId, contentId, rating, accessUser, function(result,err) { 
     if (err){
       console.log(err);
       res.end("Unexpected Error from Db");

@@ -194,7 +194,7 @@ const findRating = function(db, userId, contentId, callback) {
 const writeRating = function(db, userId, contentId, rating, callback) {
   const collection = db.collection('ratings');
   rating = parseInt(rating);
-  collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating}, function(err, result) {
+  collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating, "accessUser": accessUser}, function(err, result) {
     if (err) throw err;
     console.log(result);
     callback(result);
@@ -371,12 +371,12 @@ exports.writeCommentToMongo = function(data, userId, contentId, callback) {
 
 
 // Write to "ratings" db
-exports.WriteRatingToMongo = function(userId, contentId, rating, callback) {
+exports.WriteRatingToMongo = function(userId, contentId, rating, accessUser, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {
       console.log("Connected successfully to server");
-      writeRating(db, userId, contentId, rating, function(result,err) {
+      writeRating(db, userId, contentId, rating, accessUser, function(result,err) {
         if (err) throw err;
         db.close();
         callback(result);

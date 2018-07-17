@@ -70,6 +70,7 @@ app.get('/GetContentsPreview', function (req, res) {
         getRating(userId,contentId, i, function(response,err){
           avg=response[0];
           i = response[1];
+          numRatings = response[2];
           console.log("response inside");
           console.log(response);
           console.log(i);
@@ -85,7 +86,8 @@ app.get('/GetContentsPreview', function (req, res) {
              "tags" :         result[i].tags,
              "userId" :       result[i].userId,
              "contentId":     result[i].contentId,
-             "rating" :       avg 
+             "rating" :       avg,
+             "numRatings" :   numRatings, 
             });
           }
           else{
@@ -318,7 +320,7 @@ function getRating(userId,contentId,extra,callback){
         if (count != 0) {
           avg = sum/count;
         }
-        myResponse = [avg,extra];
+        myResponse = [avg,extra,result.length];
         callback(myResponse); 
       }
   });

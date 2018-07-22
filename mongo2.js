@@ -260,22 +260,35 @@ const saveAnalytics = function(db, data, callback) {
   var contentUserId = data.contentUserId;
   var accessUserId = data.accessUserId;
   var accessTimes = data.accessTimes;
+  var updateType = data.type;
+  var quizzes = data.quizzes;
   const collection = db.collection('analytics');
 
   collection.find({"startTime": startTime, "contentId": contentId, "contentUserId": contentUserId}).toArray(function(err, docs) {
       if (err) throw err;
       
       if(docs.length>0) {
-       collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "accessTimes": accessTimes} }, {"upsert": false}, function(err, result) {
-          if (err) throw err;
-          else{
-            console.log("Update successful");
-            callback(result);
-          }
-        });  
+        if(updateType && updateType=="quizUpdate"){
+          collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "quizzes": quizzes} }, {"upsert": false}, function(err, result) {
+            if (err) throw err;
+            else{
+              console.log("Update successful");
+              callback(result);
+            }
+          });
+        }
+        else{
+         collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "accessTimes": accessTimes} }, {"upsert": false}, function(err, result) {
+            if (err) throw err;
+            else{
+              console.log("Update successful");
+              callback(result);
+            }
+          });  
+        }
       }
       else{
-        collection.insertOne({"startTime": startTime, "endTime": endTime, "contentId": contentId, 'contentUserId': contentUserId, "accessUserId": accessUserId, "accessTimes":accessTimes}, function(err, result) {
+        collection.insertOne({"startTime": startTime, "endTime": endTime, "contentId": contentId, 'contentUserId': contentUserId, "accessUserId": accessUserId, "accessTimes":accessTimes, "quizzes": quizzes}, function(err, result) {
           if (err) throw err;
           else{
           console.log("insert successful")

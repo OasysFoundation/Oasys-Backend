@@ -212,25 +212,29 @@ const saveContent = function(db, userId, contentId, data, callback) {
   var description = data.description;
   var tags = data.tags;
 
+  const collection = db.collection('contents');
+
   console.log(contentId);
   console.log(userId);
-  console.log(newData);
-  console.log(title);
-  console.log(description);
-  console.log(published);
-  console.log(tags);
 
 
-
-  const collection = db.collection('contents');
-  collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
-    if (err) {
-      console.log(err)
-      throw err;
+  collection.find({'contentId': contentId, 'userId':userId, 'published':1}).toArray(function(err, docs) {
+    if (err) throw err;
+    
+    if(docs.length>0) {
+      callback("alreadyPublished");
     }
     else{
-      console.log("Update successful");
-      callback(result);
+      collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+        if (err) {
+          console.log(err)
+          throw err;
+        }
+        else{
+          console.log("Update successful");
+          callback(result);
+        }
+      });   
     }
   });  
 }
@@ -264,11 +268,20 @@ const saveAnalytics = function(db, data, callback) {
   var quizzes = data.quizzes;
   const collection = db.collection('analytics');
 
+  console.log("quizzes = ")
+  console.log(quizzes);
+  console.log("update Type = ")
+  console.log(updateType)
+  console.log("startTime = ")
+  console.log(startTime);
+
   collection.find({"startTime": startTime, "contentId": contentId, "contentUserId": contentUserId}).toArray(function(err, docs) {
       if (err) throw err;
       
       if(docs.length>0) {
+        console.log("HERE 1")
         if(updateType && updateType=="quizUpdate"){
+          console.log("HERE 2")
           collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "quizzes": quizzes} }, {"upsert": false}, function(err, result) {
             if (err) throw err;
             else{
@@ -288,6 +301,7 @@ const saveAnalytics = function(db, data, callback) {
         }
       }
       else{
+        console.log("landed here");
         collection.insertOne({"startTime": startTime, "endTime": endTime, "contentId": contentId, 'contentUserId': contentUserId, "accessUserId": accessUserId, "accessTimes":accessTimes, "quizzes": quizzes}, function(err, result) {
           if (err) throw err;
           else{
@@ -313,11 +327,25 @@ const publishContent = function(db, userId, contentId, data, callback) {
   var tags = data.tags;
 
   const collection = db.collection('contents');
-  collection.update({"contentId": contentId, "userId": userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+
+
+  collection.find({'contentId': contentId, 'userId':userId, 'published':1}).toArray(function(err, docs) {
     if (err) throw err;
+    
+    if(docs.length>0) {
+      callback("alreadyPublished");
+    }
     else{
-      console.log("Update successful");
-      callback(result);
+      collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
+        if (err) {
+          console.log(err)
+          throw err;
+        }
+        else{
+          console.log("Update successful");
+          callback(result);
+        }
+      });   
     }
   });  
 }

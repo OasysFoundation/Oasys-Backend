@@ -274,8 +274,12 @@ app.post('/save/:userId/:contentId', function (req, res) {
           res.end("Unexpected Error from Db");
         }
         else{
-          console.log(result);
-          res.send(result); 
+          if(result==="alreadyPublished")
+            res.json({"alreadyPublished":true})
+          else{
+            console.log(result);
+            res.send(result); 
+          }
         }
       });
       }
@@ -290,8 +294,12 @@ app.post('/save/:userId/:contentId', function (req, res) {
           res.end("Unexpected Error from Db");
         }
         else{
-          console.log(result);
-          res.send(result); 
+          if(result==="alreadyPublished")
+            res.json({"alreadyPublished":true})
+          else{
+            console.log(result);
+            res.send(result); 
+          }
         }
       });
     }

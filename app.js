@@ -1,8 +1,4 @@
 #!/usr/bin/env nodejs
-
-/****************************
- Starting Point of Application
- ****************************/
 require('dotenv').config()
 const express = require('express')
 const util = require('util');
@@ -15,7 +11,6 @@ const multerS3 = require('multer-s3');
 
 // Set S3 endpoint to DigitalOcean Spaces
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
-
 const s3 = new aws.S3({
     endpoint: spacesEndpoint
 });
@@ -34,7 +29,6 @@ const upload = multer({
 }).array('upload', 1);
 
 const app = express()
-
 
 //Middleware for CORS
 app.use(function (req, res, next) {
@@ -55,59 +49,62 @@ app.get('/', (req, res) => {
 Loads picture, title, description, tags, and url from "contents" db with published flag
 */
 app.get('/GetContentsPreview', function (req, res) {
-    mongo.readPreviewFromMongo(function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            trueResult = [];
-            console.log(result.length);
-            for (i = 0; i < result.length; i++) {
-                //make call to avg rating .then{}
-                var userId = result[i].userId;
-                var contentId = result[i].contentId;
+    mongo.readPreviewFromMongo()
+        .then(data => res.json(data))
 
-                getRating(userId, contentId, i, function (response, err) {
-                    avg = response[0];
-                    i = response[1];
-                    numRatings = response[2];
-                    console.log("response inside");
-                    console.log(response);
-                    console.log(i);
-                    if (err) {
-                        res.end("Unexpected Error from Db");
-                    }
-                    else if (avg) {
-                        console.log("MADE IT INSIDE");
-                        trueResult.push({
-                            "picture": result[i].picture,
-                            "title": result[i].title,
-                            "description": result[i].description,
-                            "tags": result[i].tags,
-                            "userId": result[i].userId,
-                            "contentId": result[i].contentId,
-                            "rating": avg,
-                            "numRatings": numRatings,
-                        });
-                    }
-                    else {
-                        trueResult.push({
-                            "picture": result[i].picture,
-                            "title": result[i].title,
-                            "description": result[i].description,
-                            "tags": result[i].tags,
-                            "userId": result[i].userId,
-                            "contentId": result[i].contentId,
-                        });
-                    }
-                    if (trueResult.length == (result.length))
-                        res.json(trueResult);
-
-                })
-            }
-        }
-    });
+        .catch(err => res.end('DB error'))
+    //     if (err) {
+    //         console.log(err);
+    //         res.end("Unexpected Error from Db");
+    //     }
+    //     else {
+    //         trueResult = [];
+    //         console.log(result.length);
+    //         for (i = 0; i < result.length; i++) {
+    //             //make call to avg rating .then{}
+    //             var userId = result[i].userId;
+    //             var contentId = result[i].contentId;
+    //
+    //             getRating(userId, contentId, i, function (response, err) {
+    //                 avg = response[0];
+    //                 i = response[1];
+    //                 numRatings = response[2];
+    //                 console.log("response inside");
+    //                 console.log(response);
+    //                 console.log(i);
+    //                 if (err) {
+    //                     res.end("Unexpected Error from Db");
+    //                 }
+    //                 else if (avg) {
+    //                     console.log("MADE IT INSIDE");
+    //                     trueResult.push({
+    //                         "picture": result[i].picture,
+    //                         "title": result[i].title,
+    //                         "description": result[i].description,
+    //                         "tags": result[i].tags,
+    //                         "userId": result[i].userId,
+    //                         "contentId": result[i].contentId,
+    //                         "rating": avg,
+    //                         "numRatings": numRatings,
+    //                     });
+    //                 }
+    //                 else {
+    //                     trueResult.push({
+    //                         "picture": result[i].picture,
+    //                         "title": result[i].title,
+    //                         "description": result[i].description,
+    //                         "tags": result[i].tags,
+    //                         "userId": result[i].userId,
+    //                         "contentId": result[i].contentId,
+    //                     });
+    //                 }
+    //                 if (trueResult.length == (result.length))
+    //                     res.json(trueResult);
+    //
+    //             })
+    //         }
+    //     }
+    // });
 });
 
 app.get('/GetUserContentsPreview', function (req, res) {

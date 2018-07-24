@@ -394,20 +394,24 @@ exports.writeCommentToMongo = function (data, userId, contentId, callback) {
 
 
 // Reads from "contents" db
-exports.readPreviewFromMongo = function (callback) {
-    MongoClient.connect(url, function (err, db) {
-        // const db = client.db()
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            getPreview(db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
+
+
+
+//readPreviewFromMongo =
+// function (callback) {
+//     MongoClient.connect(url, function (err, db) {
+//         // const db = client.db()
+//         if (err) throw err;
+//         else {
+//             console.log("Connected successfully to db");
+//             getPreview(db, function (result, err) {
+//                 if (err) throw err;
+//                 db.close();
+//                 callback(result);
+//             });
+//         }
+//     });
+// };
 
 // Reads from "contents" db
 exports.readUserPreviewFromMongo = function (callback) {
@@ -597,22 +601,18 @@ exports.readAllCommentsFromMongo = function (userId, callback) {
 };
 
 const MongoX = {
-    readAllRatings:
-        (userId) =>
-        query('ratings', 'find', {userId: userId})
-            // .then(callback)
-            // .catch(err => console.log(err))
+    readAllRatings: (userId) => query('ratings', 'find', {userId: userId}),
+    getContentsPreview: () => query('contents', 'find', ({published: 1, featured: true}))
 }
 
 
-function query(collection, operation, ...params) { //add option to pass callback directly
+function query(collectionName, operation, ...params) { //add option to pass callback directly
     return new Promise(function (resolve, reject) {
         MongoClient.connect(url)
 
             .then(client => {
-
                 const db = client.db()
-                const collection = db.collection('ratings');
+                const collection = db.collection(collectionName);
 
                 const mongoDBquery = operation === 'find'
                     ? () => collection[operation](...params).toArray()
@@ -637,7 +637,7 @@ function query(collection, operation, ...params) { //add option to pass callback
     })
 }
 
-
+exports.readPreviewFromMongo = MongoX.getContentsPreview;
 exports.readAllRatingsFromMongo = MongoX.readAllRatings;
 
 
@@ -671,36 +671,6 @@ const writeRating = function (db, userId, contentId, rating, accessUser, callbac
         callback(result);
     });
 }
-
-// exports.readAllRatingsFromMongo = function (userId, callback) {
-//     MongoClient.connect(url)
-//         .then(function (client) {
-//             const db = client.db()
-//             const collection = db.collection('ratings');
-//             collection.find({'userId': userId }).toArray()
-//                 .then(data =>
-//                     callback(data)
-//                 )
-//                 .catch(err => {
-//                     throw err
-//                 })
-//             client.close()
-//         })
-//         .catch(function (err) {
-//             console.log('errr promise', err)
-//         })
-// };
-//
-
-
-// mongoClient.connect(url)
-//     .then(conn => {
-//         return conn.collection('contents')
-//             .find().limit(10).toArray()
-//             .then(out => console.log(out))
-//             .then(() => conn.close())
-//     })
-
 
 
 

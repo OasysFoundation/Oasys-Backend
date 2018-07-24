@@ -602,17 +602,33 @@ exports.readAllCommentsFromMongo = function (userId, callback) {
 //factory => name connections
 
 
-// const promisify = function(func) {
-//     return new Promise(function(resolve, reject){
 //
-//     })
-// }
-//
-// const Q = function(){
-//     this.readAllRatings =
-//
-// }
+const delayerWrap = function (queryFunc) {
+    return new Promise(function (resolve, reject) {
+        queryFunc()
+            .then(dat => {
+                console.log('HHAA', dat);
+                resolve(dat)
+            })
+            .catch(error => {
+                throw error;
+                reject(error)
+            })
+    })
+}
 
+
+const MongoX = {
+    readAllRatings: function (userId, callback) {
+        return query('ratings', 'find', {userId: userId})
+            .then(d => {
+                // console.log("DD", d);
+                // resolve(d);
+                callback(d)
+            })
+            .catch(err => console.log(err))
+    }
+}
 
 
 function query(collection, operation, ...params) { //add option to pass callback directly
@@ -624,18 +640,24 @@ function query(collection, operation, ...params) { //add option to pass callback
                 const db = client.db()
                 const collection = db.collection('ratings');
 
-                const mongoDBQuery = operation === 'find'
+                const mongoDBquery = operation === 'find'
                     ? () => collection[operation](...params).toArray()
                     : () => collection[operation](...params)
 
+                // console.log('mongoDBquery')
+
                 mongoDBquery()
-                    .then(resolve)
+                    .then(data => {
+                        console.log('YO', data)
+                        resolve(data)
+                        client.close();
+                    })
                     .catch(err => {
-                        reject(err)
                         throw err
+                        reject(err)
+                        client.close();
                     })
 
-                client.close();
             })
 
             .catch(err => {
@@ -645,9 +667,13 @@ function query(collection, operation, ...params) { //add option to pass callback
 }
 
 
-exports.readAllRatingsFromMongo = function (userId, callback) {
-    query('ratings', 'find', {userId}).then(callback) //{userId} === {userId:userId}
-};
+exports.readAllRatingsFromMongo = MongoX.readAllRatings;
+
+
+//     function (userId, callback) {
+//      query('ratings', 'find', {userId}).then(callback) //{userId} === {userId:userId}
+// };
+
 
 // Write to "ratings" db
 exports.WriteRatingToMongo = function (userId, contentId, rating, accessUser, callback) {

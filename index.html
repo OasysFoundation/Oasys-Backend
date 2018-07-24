@@ -256,18 +256,39 @@ var urlSave = 'http://174.138.2.82/saveEditor';
 
 
 
-const saveEndpoint = 'http://174.138.2.82/saveEditor';
-var body= {"rating":34};   
-fetch(saveEndpoint, {
-     method: 'POST',
-     body: JSON.stringify(body),
-     headers: new Headers({
-      'Content-Type': 'application/json',
-       'id': 666
+
+const test = 'http://localhost:8080/testlol'
+// const getAContent = 'http://localhost:8080/getContentInfo/drwho/work'
+const loadContent = 'http://localhost:8080/GetContentsPreview'
+
+fetcher(test)
+fetcher(loadContent)
+// fetcher(getAContent)
+function fetcher (url) {
+    fetch(url, {
+        method: 'GET'
+    }).then(function(response) {
+        console.log(response);
+        return response.json();
     })
-   }).then(res => res.json())
-   .catch(error => console.error('Error:', error))
-   .then(response => console.log('Success:', response));
+        .then(function(myJson) {
+            console.log(myJson);
+        });
+}
+
+
+// const saveEndpoint = 'http://174.138.2.82/saveEditor';
+// var body= {"rating":34};
+// fetch(saveEndpoint, {
+//      method: 'POST',
+//      body: JSON.stringify(body),
+//      headers: new Headers({
+//       'Content-Type': 'application/json',
+//        'id': 666
+//     })
+//    }).then(res => res.json())
+//    .catch(error => console.error('Error:', error))
+//    .then(response => console.log('Success:', response));
 
 
 </script>

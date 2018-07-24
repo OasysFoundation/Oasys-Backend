@@ -596,38 +596,12 @@ exports.readAllCommentsFromMongo = function (userId, callback) {
     });
 };
 
-
-//get vs set
-//wrap in promise instead of callbacks
-//factory => name connections
-
-
-//
-const delayerWrap = function (queryFunc) {
-    return new Promise(function (resolve, reject) {
-        queryFunc()
-            .then(dat => {
-                console.log('HHAA', dat);
-                resolve(dat)
-            })
-            .catch(error => {
-                throw error;
-                reject(error)
-            })
-    })
-}
-
-
 const MongoX = {
-    readAllRatings: function (userId, callback) {
-        return query('ratings', 'find', {userId: userId})
-            .then(d => {
-                // console.log("DD", d);
-                // resolve(d);
-                callback(d)
-            })
-            .catch(err => console.log(err))
-    }
+    readAllRatings:
+        (userId) =>
+        query('ratings', 'find', {userId: userId})
+            // .then(callback)
+            // .catch(err => console.log(err))
 }
 
 
@@ -644,8 +618,6 @@ function query(collection, operation, ...params) { //add option to pass callback
                     ? () => collection[operation](...params).toArray()
                     : () => collection[operation](...params)
 
-                // console.log('mongoDBquery')
-
                 mongoDBquery()
                     .then(data => {
                         console.log('YO', data)
@@ -659,7 +631,6 @@ function query(collection, operation, ...params) { //add option to pass callback
                     })
 
             })
-
             .catch(err => {
                 throw err
             })
@@ -668,11 +639,6 @@ function query(collection, operation, ...params) { //add option to pass callback
 
 
 exports.readAllRatingsFromMongo = MongoX.readAllRatings;
-
-
-//     function (userId, callback) {
-//      query('ratings', 'find', {userId}).then(callback) //{userId} === {userId:userId}
-// };
 
 
 // Write to "ratings" db

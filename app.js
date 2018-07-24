@@ -576,20 +576,22 @@ app.get('/getAllRatings/:userId', function (req, res) {
 
     userId = req.params.userId;
 
-    mongo.readAllRatingsFromMongo(userId, function (result, err) {
-        // .then(res.json)
-        // .catch(err => {
-        //     console.info(err)
-        //     res.end("Unexpected Error from Db")
-        // })
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
+    mongo.readAllRatingsFromMongo(userId)
+        .then(result => {console.log(res.json, "TYPE :", typeof res.json); return res.json(result)})
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        })
+
+    //     function (result, err) {
+    //     if (err) {
+    //         console.log(err);
+    //         res.end("Unexpected Error from Db");
+    //     }
+    //     else {
+    //         res.json(result);
+    //     }
+    // });
 
 });
 

@@ -14,3 +14,16 @@ function markusDo(collection, operation, ...params) {
     })
 }
 
+const delayerWrap = function (queryFunc) {
+    return new Promise(function (resolve, reject) {
+        queryFunc()
+            .then(dat => {
+                console.log('HHAA', dat);
+                resolve(dat)
+            })
+            .catch(error => {
+                throw error;
+                reject(error)
+            })
+    })
+}

@@ -515,6 +515,27 @@ app.get('/getAllContentsForUser/:userId/', function (req, res) {
 });
 
 /*
+post wallet to "users" db
+*/
+app.post('/postWalletId/:userId/:walletId', function (req, res) {
+
+  userId = req.params.userId;
+  walletId = req.params.walletId;
+
+  mongo.writeWalletToUsersMongo(userId, walletId, function(result,err) { 
+    if (err){
+      console.log(err);
+      res.end("Unexpected Error from Db");
+    }
+    else{
+      res.json(result); 
+    }
+  });
+
+});
+
+
+/*
 Get Analytics data for content CREATOR from "analytics" db
 */
 app.get('/getAllContentsForCreator/:userId/', function (req, res) {

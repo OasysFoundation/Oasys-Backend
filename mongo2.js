@@ -170,6 +170,18 @@ const findAnalyticsCreator = function(userId, db, callback) {
 }
 
 // Returns full JSON of specified user id and content id
+const writeWallet = function(userId, walletId, db, callback) {
+  const collection = db.collection('users');
+  collection.update({"UID": userId}, { $set: { "walletId" : walletId } }, {"upsert": true}, function(err, result) {
+    if (err) throw err;
+    else{
+      console.log("Update successful");
+      callback(result);
+    }
+  }); 
+}
+
+// Returns full JSON of specified user id and content id
 const findAnalyticsContents = function(userId, contentId, db, callback) {
   const collection = db.collection('analytics');
   collection.find({'contentId': contentId, "contentUserId" :userId }).toArray(function(err, result) {
@@ -643,10 +655,19 @@ exports.readAllRatingsFromMongo = function(userId, callback) {
   });
 };
 
-
-
-
-
+exports.writeWalletToUsersMongo = function(userId, walletId, callback) {
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    else {   
+      console.log("Connected successfully to db");
+      writeWallet(userId, walletId, db, function(result,err) {
+        if (err) throw err;
+        db.close();
+        callback(result);
+        });
+    }
+  });
+};
 
 
 

@@ -50,70 +50,9 @@ Loads picture, title, description, tags, and url from "contents" db with publish
 */
 app.get('/GetContentsPreview', function (req, res) {
     mongo.readPreviewFromMongo()
-        .then(data => res.json(data))
+        .then(data => {
 
-        .catch(err => res.end('DB error'))
-    //     if (err) {
-    //         console.log(err);
-    //         res.end("Unexpected Error from Db");
-    //     }
-    //     else {
-    //         trueResult = [];
-    //         console.log(result.length);
-    //         for (i = 0; i < result.length; i++) {
-    //             //make call to avg rating .then{}
-    //             var userId = result[i].userId;
-    //             var contentId = result[i].contentId;
-    //
-    //             getRating(userId, contentId, i, function (response, err) {
-    //                 avg = response[0];
-    //                 i = response[1];
-    //                 numRatings = response[2];
-    //                 console.log("response inside");
-    //                 console.log(response);
-    //                 console.log(i);
-    //                 if (err) {
-    //                     res.end("Unexpected Error from Db");
-    //                 }
-    //                 else if (avg) {
-    //                     console.log("MADE IT INSIDE");
-    //                     trueResult.push({
-    //                         "picture": result[i].picture,
-    //                         "title": result[i].title,
-    //                         "description": result[i].description,
-    //                         "tags": result[i].tags,
-    //                         "userId": result[i].userId,
-    //                         "contentId": result[i].contentId,
-    //                         "rating": avg,
-    //                         "numRatings": numRatings,
-    //                     });
-    //                 }
-    //                 else {
-    //                     trueResult.push({
-    //                         "picture": result[i].picture,
-    //                         "title": result[i].title,
-    //                         "description": result[i].description,
-    //                         "tags": result[i].tags,
-    //                         "userId": result[i].userId,
-    //                         "contentId": result[i].contentId,
-    //                     });
-    //                 }
-    //                 if (trueResult.length == (result.length))
-    //                     res.json(trueResult);
-    //
-    //             })
-    //         }
-    //     }
-    // });
-});
 
-app.get('/GetUserContentsPreview', function (req, res) {
-    mongo.readUserPreviewFromMongo(function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
             trueResult = [];
             console.log(result.length);
             for (i = 0; i < result.length; i++) {
@@ -121,9 +60,18 @@ app.get('/GetUserContentsPreview', function (req, res) {
                 var userId = result[i].userId;
                 var contentId = result[i].contentId;
 
-                getRating(userId, contentId, i, function (response, err) {
+                getRating(userId, contentId, i)
+                    .then(result => {
+                        const sum = result.reduce((acc, val) => acc.rating + val.rating, 0);
+                        const average = result.length ? sum / result.length : 0
+                        callback([average, extra, result.length])
+                    })
+                    .catch(err => {
+                        throw err, res.end('error at getRating')
+                    })
                     avg = response[0];
                     i = response[1];
+                    numRatings = response[2];
                     console.log("response inside");
                     console.log(response);
                     console.log(i);
@@ -139,7 +87,8 @@ app.get('/GetUserContentsPreview', function (req, res) {
                             "tags": result[i].tags,
                             "userId": result[i].userId,
                             "contentId": result[i].contentId,
-                            "rating": avg
+                            "rating": avg,
+                            "numRatings": numRatings,
                         });
                     }
                     else {
@@ -157,10 +106,18 @@ app.get('/GetUserContentsPreview', function (req, res) {
 
                 })
             }
+
+
+
+            res.json(data)
+        })
+
+        .catch(err => res.end('DB error'));
+
+
         }
     });
 });
-
 
 /*
 Loads full JSON of selected experience from “contents” db
@@ -302,29 +259,18 @@ app.post('/save/:userId/:contentId', function (req, res) {
 /*
 Helper function for calculating rating avg
 */
-function getRating(userId, contentId, extra, callback) {
-    mongo.getRatingsForContent(userId, contentId, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            avg = 0;
-            sum = 0;
-            count = 0;
-
-            for (var i = 0; i < result.length; i++) {
-                sum += result[i].rating;
-                count += 1;
-            }
-
-            if (count != 0) {
-                avg = sum / count;
-            }
-            myResponse = [avg, extra, result.length];
-            callback(myResponse);
-        }
-    });
+function getRating(userId, contentId, extra) {
+    return new Promise(function(resolve, reject){
+        mongo.getRatingsForContent(userId, contentId)
+            .then(result => {
+                const sum = result.reduce((acc, val) => acc.rating + val.rating, 0);
+                const average = result.length ? sum / result.length : 0
+                callback([average, extra, result.length])
+            })
+            .catch(err => {
+                throw err, res.end('error at getRating')
+            })
+    })
 }
 
 /*
@@ -342,23 +288,23 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
 
     upload(request, response, function (error, success) {
         if (error) {
-            console.log(error);
-            response.end('{"error" : "Update failed", "status" : 404}');
+            console.log('uploadErr ', error);
+            response.end('error" : "Update failed", "status" : 404');
         }
         console.log(request.files)
         console.log('File uploaded successfully.');
 
         var newUrl = request.files[0].location;
 
-        mongo.uploadPicture(userId, newUrl, function (result, err) {
-            if (err) {
-                console.log(err);
-                response.end("Unexpected Error from Db");
-            }
-            else {
-                response.json({"success": true});
-            }
-        });
+        mongo.uploadProfilePicture(userId, newUrl)
+            .then(result => {
+                console.log(`PROFILE picture uploaded!! `)
+                return res.json(result)
+            })
+            .catch(err => {
+                console.info(err)
+                res.end("Unexpected Error from Db")
+            });
     });
 });
 
@@ -384,7 +330,8 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
         mongo.uploadTitlePicture(userId, contentId, newUrl)
             .then(result => {
                 console.log(`Title picture uploaded!! `)
-                return res.json(result)})
+                return res.json(result)
+            })
             .catch(err => {
                 console.info(err)
                 res.end("Unexpected Error from Db")
@@ -399,16 +346,14 @@ Get all information from "users" db
 app.get('/profile/:userId', function (request, response) {
 
     userId = request.params.userId;
-    mongo.getProfile(userId, function (result, err) {
-        if (err) {
-            console.log(err);
-            response.end("Unexpected Error from Db");
-        }
-        else {
-            // console.log("ss", response.json(result))
-            response.json(result);
-        }
-    });
+    mongo.getProfile(userId).then(result => {
+        console.log(`got profile info! `)
+        return res.json(result)
+    })
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        });
 });
 
 

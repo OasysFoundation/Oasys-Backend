@@ -20,80 +20,6 @@ var exports = module.exports = {};
 
 'use strict';
 
-// Gets profile data from "users" db 
-const getProfileData = function (db, userId, callback) {
-    const collection = db.collection('users');
-    console.log(userId);
-    collection.find({'UID': userId}).toArray(function (err, docs) {
-        if (err) throw err;
-        console.log(docs);
-        callback(docs);
-    });
-};
-
-// Uploads picture to "users" db 
-const newPicture = function (db, userId, newUrl, callback) {
-    const collection = db.collection('users');
-    collection.update({"UID": userId}, {$set: {"PIC": newUrl}}, {"upsert": true}, function (err, result) {
-        if (err) throw err;
-        else {
-            console.log("Update successful");
-            callback(result);
-        }
-    });
-};
-
-const newTitlePic = function (db, userId, contentId, newUrl, callback) {
-    const collection = db.collection('contents');
-    console.log("BOUT TO UPDATE");
-
-    collection.update({
-        "contentId": contentId,
-        "userId": userId
-    }, {$set: {"picture": newUrl}}, {"upsert": true}, function (err, result) {
-        if (err) {
-            console.log(err);
-            throw err;
-        }
-        else {
-            console.log("Update successful");
-            callback(result);
-        }
-    });
-};
-
-// Uploads username to "users" db 
-const newUsername = function (db, userId, username, callback) {
-    const collection = db.collection('users');
-    collection.find({'NAME': username}).toArray(function (err, docs) {
-        if (err) throw err;
-
-        if (docs.length > 0) {
-            console.log("my docs");
-            console.log(docs);
-            callback();
-        }
-        else {
-            collection.insertOne({"UID": userId, 'NAME': username, "PIC": ''}, function (err, result) {
-                if (err) throw err;
-                console.log(result);
-                callback(result);
-            });
-        }
-    });
-};
-
-
-// Returns picture, title, description, tags, and url from "contents" db with published flag
-const getPreview = function (db, callback) {
-    const collection = db.collection('contents');
-    collection.find({'published': 1, 'featured': true}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
 
 // Returns picture, title, description, tags, and url from "contents" db with published flag
 const getUserPreview = function (db, callback) {
@@ -177,20 +103,6 @@ const publishContent = function (db, userId, contentId, data, callback) {
     });
 }
 
-
-// /***************************
-// Deleting from Mongo (helpers)
-// ****************************/
-// const removeDocument = function(db, mongoId, callback) {
-//   const collection = db.collection('graph');
-//   collection.deleteOne({"_id": ObjectId(mongoId)}, function(err, result) {
-//     if (err) throw err;
-//     assert.equal(err, null);
-//     callback(result);
-//   });    
-// }
-
-
 // Write to "contents" db
 exports.writeContentToMongo = function (status, data, userId, contentId, callback) {
     if (status == "save") {
@@ -252,10 +164,6 @@ exports.readUserPreviewFromMongo = function (callback) {
     });
 };
 
-// Reads content (from title?!) from a user
-
-
-//Reads from "ratings" db
 
 exports.uploadUsername = function (userId, username, callback) {
     MongoClient.connect(url, function (err, db) {
@@ -271,40 +179,38 @@ exports.uploadUsername = function (userId, username, callback) {
     });
 };
 
-exports.uploadPicture = function (userId, newUrl, callback) {
-    MongoClient.connect(url, function (err, db) {
+
+// Uploads username to "users" db
+const newUsername = function (db, userId, username, callback) {
+    const collection = db.collection('users');
+    collection.find({'NAME': username}).toArray(function (err, docs) {
         if (err) throw err;
+
+        if (docs.length > 0) {
+            console.log("my docs");
+            console.log(docs);
+            callback();
+        }
         else {
-            console.log("Connected successfully to server");
-            newPicture(db, userId, newUrl, function (result, err) {
+            collection.insertOne({"UID": userId, 'NAME': username, "PIC": ''}, function (err, result) {
                 if (err) throw err;
-                db.close();
+                console.log(result);
                 callback(result);
             });
         }
     });
 };
 
-
-exports.getProfile = function (userId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to server");
-            getProfileData(db, userId, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
-
-
+//TODO app.js still change to promise!
 const MongoX = {
 
     getAllRatings: (userId) => query('ratings', 'find', {userId: userId}),
-    getRatingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId})
+    getRatingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
+
+    getProfile: (userId) => query('users', 'find', {'UID': userId}),
+
+
+    // uploadUserName: (userId, userName) => query('users')
 
     writeRating:
         (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
@@ -329,13 +235,20 @@ const MongoX = {
 
     readAnalyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId}),
 
-    uploadTitlePicture(userId, contentId, newUrl){
-        return  query('contents', 'update', {
+
+    uploadProfilePicture: (userId, newUrl) => query('users', 'update', {"UID": userId}, {$set: {"PIC": newUrl}}, {"upsert": true}),
+
+    uploadTitlePicture(userId, contentId, newUrl) {
+        return query('contents', 'update', {
             "contentId": contentId,
             "userId": userId
         }, {$set: {"picture": newUrl}}, {"upsert": true})
-    }
+    },
+
 }
+
+exports.uploadProfilePicture = MongoX.uploadProfilePicture;
+exports.getProfile = MongoX.getProfile;
 
 exports.uploadTitlePicture = MongoX.uploadTitlePicture;
 
@@ -346,6 +259,7 @@ exports.readPreviewFromMongo = MongoX.getContentsPreview;
 exports.readAnalyticsFromUsersMongo = MongoX.readAnalyticsFromUsers;
 exports.readAnalyticsFromCreatorMongo = MongoX.readAnalyticsFromCreator;
 exports.readAllRatingsFromMongo = MongoX.readAllRatings;
+
 exports.writeAnalyticsDataToMongo = function (data, callback) {
     MongoClient.connect(url, function (err, client) {
         if (err) throw err;
@@ -510,37 +424,6 @@ const findComments = function (userId, contentId, slideNumber, db, callback) {
         callback(result);
     });
 }
-
-// Write to "ratings" db
-// exports.WriteRatingToMongo = function (userId, contentId, rating, accessUser, callback) {
-//     MongoClient.connect(url, function (err, db) {
-//         if (err) throw err;
-//         else {
-//             console.log("Connected successfully to server");
-//             writeRating(db, userId, contentId, rating, accessUser, function (result, err) {
-//                 if (err) throw err;
-//                 db.close();
-//                 callback(result);
-//             });
-//         }
-//     });
-// };
-//
-// // writes rating to ratings db
-// const writeRating = function (db, userId, contentId, rating, accessUser, callback) {
-//     const collection = db.collection('ratings');
-//     rating = parseInt(rating);
-//     collection.insertOne({
-//         "contentId": contentId,
-//         'userId': userId,
-//         "rating": rating,
-//         "accessUser": accessUser
-//     }, function (err, result) {
-//         if (err) throw err;
-//         console.log(result);
-//         callback(result);
-//     });
-// }
 
 
 

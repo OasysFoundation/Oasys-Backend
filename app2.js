@@ -264,51 +264,58 @@ app.post('/save/:userId/:contentId', function (req, res) {
   userId = req.params.userId;
   contentId = req.params.contentId;
 
-   if(!req.body){
-      res.end("Error: Request body is empty.");
-    }
-    else if(req.body.published==1){
-      if(!req.body.title || !req.body.description || !req.body.tags ){
-        console.log("NOSIRE");
-        res.end("You cannot publish unless you provide the picture url, title, description, and tags");
-      }
-      else {
-        jsonBody =req.body;
-        mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 
-        if (err){
-          console.log(err);
-          res.end("Unexpected Error from Db");
-        }
-        else{
-          if(result==="alreadyPublished")
-            res.json({"alreadyPublished":true})
-          else{
-            console.log(result);
-            res.send(result); 
-          }
-        }
-      });
-      }
+  if (contentId.indexOf('-') == -1){
 
-    }
-    else{
-      console.log("STEP 4: NOT EXPECTED");
-      jsonBody =req.body;
-      mongo.writeContentToMongo("save", jsonBody, userId, contentId, function(result,err) { 
-        if (err){
-          console.log(err);
-          res.end("Unexpected Error from Db");
+     if(!req.body){
+        res.end("Error: Request body is empty.");
+      }
+      else if(req.body.published==1){
+        if(!req.body.title || !req.body.description || !req.body.tags ){
+          console.log("NOSIRE");
+          res.end("You cannot publish unless you provide the picture url, title, description, and tags");
         }
-        else{
-          if(result==="alreadyPublished")
-            res.json({"alreadyPublished":true})
-          else{
-            console.log(result);
-            res.send(result); 
+        else {
+          jsonBody =req.body;
+          mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 
+          if (err){
+            console.log(err);
+            res.end("Unexpected Error from Db");
           }
+          else{
+            if(result==="alreadyPublished")
+              res.json({"alreadyPublished":true})
+            else{
+              console.log(result);
+              res.send(result); 
+            }
+          }
+        });
         }
-      });
-    }
+
+      }
+      else{
+        console.log("STEP 4: NOT EXPECTED");
+        jsonBody =req.body;
+        mongo.writeContentToMongo("save", jsonBody, userId, contentId, function(result,err) { 
+          if (err){
+            console.log(err);
+            res.end("Unexpected Error from Db");
+          }
+          else{
+            if(result==="alreadyPublished")
+              res.json({"alreadyPublished":true})
+            else{
+              console.log(result);
+              res.send(result); 
+            }
+          }
+        });
+      }
+  }
+  else{
+    res.json({"hyphen":true});
+
+  }
 
 });
 

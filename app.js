@@ -69,55 +69,58 @@ app.get('/GetContentsPreview', function (req, res) {
                     .catch(err => {
                         throw err, res.end('error at getRating')
                     })
-                    avg = response[0];
-                    i = response[1];
-                    numRatings = response[2];
-                    console.log("response inside");
-                    console.log(response);
-                    console.log(i);
-                    if (err) {
-                        res.end("Unexpected Error from Db");
-                    }
-                    else if (avg) {
-                        console.log("MADE IT INSIDE");
-                        trueResult.push({
-                            "picture": result[i].picture,
-                            "title": result[i].title,
-                            "description": result[i].description,
-                            "tags": result[i].tags,
-                            "userId": result[i].userId,
-                            "contentId": result[i].contentId,
-                            "rating": avg,
-                            "numRatings": numRatings,
-                        });
-                    }
-                    else {
-                        trueResult.push({
-                            "picture": result[i].picture,
-                            "title": result[i].title,
-                            "description": result[i].description,
-                            "tags": result[i].tags,
-                            "userId": result[i].userId,
-                            "contentId": result[i].contentId,
-                        });
-                    }
-                    if (trueResult.length == (result.length))
-                        res.json(trueResult);
+                avg = response[0];
+                i = response[1];
+                numRatings = response[2];
+                console.log("response inside");
+                console.log(response);
+                console.log(i);
+                if (err) {
+                    res.end("Unexpected Error from Db");
+                }
+                else if (avg) {
+                    console.log("MADE IT INSIDE");
+                    trueResult.push({
+                        "picture": result[i].picture,
+                        "title": result[i].title,
+                        "description": result[i].description,
+                        "tags": result[i].tags,
+                        "userId": result[i].userId,
+                        "contentId": result[i].contentId,
+                        "rating": avg,
+                        "numRatings": numRatings,
+                    });
+                }
+                else {
+                    trueResult.push({
+                        "picture": result[i].picture,
+                        "title": result[i].title,
+                        "description": result[i].description,
+                        "tags": result[i].tags,
+                        "userId": result[i].userId,
+                        "contentId": result[i].contentId,
+                    });
+                }
+                if (trueResult.length == (result.length))
+                    res.json(trueResult);
 
-                })
             }
+        )
+}
 
 
+res.json(data)
+})
 
-            res.json(data)
-        })
-
-        .catch(err => res.end('DB error'));
+.
+catch(err => res.end('DB error'));
 
 
-        }
-    });
-});
+}
+})
+;
+})
+;
 
 /*
 Loads full JSON of selected experience from “contents” db
@@ -131,16 +134,15 @@ app.get('/user/:userId/:contentId', function (req, res) {
     userId = req.params.userId;
     contentId = req.params.contentId;
 
-    mongo.readContentFromMongo(userId, contentId, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
-
+    mongo.readContentFromMongo(userId, contentId)
+        .then(result => {
+            console.log(`Read content from Mongo`)
+            return res.json(result)
+        })
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        });
 });
 
 /*
@@ -172,16 +174,15 @@ app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
 
     console.log("Test 1");
 
-    mongo.WriteRatingToMongo(userId, contentId, rating, accessUser, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
-
+    mongo.WriteRatingToMongo(userId, contentId, rating, accessUser)
+        .then(result => {
+            console.log(`Write rating to mongo`)
+            return res.json(result)
+        })
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        });
 });
 
 /* 
@@ -260,7 +261,7 @@ app.post('/save/:userId/:contentId', function (req, res) {
 Helper function for calculating rating avg
 */
 function getRating(userId, contentId, extra) {
-    return new Promise(function(resolve, reject){
+    return new Promise(function (resolve, reject) {
         mongo.getRatingsForContent(userId, contentId)
             .then(result => {
                 const sum = result.reduce((acc, val) => acc.rating + val.rating, 0);

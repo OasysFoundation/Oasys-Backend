@@ -1,4 +1,99 @@
 
+exports.readCommentsFromMongo = function (userId, contentId, slideNumber, callback) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        else {
+            console.log("Connected successfully to db");
+            findComments(userId, contentId, slideNumber, db, function (result, err) {
+                if (err) throw err;
+                db.close();
+                callback(result);
+            });
+        }
+    });
+};
+
+
+
+
+// Write to "contents" db
+exports.writeCommentToMongo = function (data, userId, contentId, callback) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        else {
+            console.log("Connected successfully to server");
+            saveComment(db, userId, contentId, data, function (result, err) {
+                if (err) throw err;
+                db.close();
+                callback(result);
+            });
+        }
+    });
+};
+//phase out
+exports.readAllCommentsFromMongo = function (userId, callback) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        else {
+            console.log("Connected successfully to db");
+            findAllComments(userId, db, function (result, err) {
+                if (err) throw err;
+                db.close();
+                callback(result);
+            });
+        }
+    });
+};
+
+
+
+// saves content to "contents" db
+const saveComment = function (db, userId, contentId, data, callback) {
+    console.log(data);
+    var time = data.time;
+    var newComment = data.comment;
+    var parent = data.parent;
+    var slideNumber = data.slideNumber;
+    var accessUser = data.accessUser;
+    const collection = db.collection('comments');
+    collection.insertOne({
+        "contentId": contentId,
+        'userId': userId,
+        "accessUser": accessUser,
+        "time": time,
+        "comment": newComment,
+        "parent": parent,
+        "slideNumber": slideNumber
+    }, function (err, result) {
+        if (err) throw err;
+        console.log(result);
+        callback(result);
+    });
+}
+// Returns full JSON of specified user id and content id
+const findAllComments = function (userId, db, callback) {
+    const collection = db.collection('comments');
+    collection.find({'userId': userId}).toArray(function (err, result) {
+        if (err) throw err;
+        console.log("db response: ")
+        console.log(result)
+        callback(result);
+    });
+}
+// Returns full JSON of specified user id and content id
+const findComments = function (userId, contentId, slideNumber, db, callback) {
+    const collection = db.collection('comments');
+    collection.find({
+        'contentId': contentId,
+        'userId': userId,
+        'slideNumber': slideNumber
+    }).toArray(function (err, result) {
+        if (err) throw err;
+        console.log("db response: ")
+        console.log(result)
+        callback(result);
+    });
+}
 
 
 // JUST FOR ME TO REMEMBER --> nothing used in the build right now

@@ -105,8 +105,8 @@ app.get('/GetContentsPreview', function (req, res) {
                     res.json(trueResult);
 
             }
-        )
-}
+        })
+})
 
 /*
 Loads full JSON of selected experience from “contents” db
@@ -490,10 +490,8 @@ app.get('/getAllComments/:userId', function (req, res) {
 Get Analytics data for user from "analytics" db
 */
 app.get('/getAllRatings/:userId', function (req, res) {
-
-    userId = req.params.userId;
-
-    mongo.getAllRatingsFromMongo(userId)
+    const {userId} = req.params.userId;
+    mongo.GET.allRatings(userId)
         .then(result => {
             return res.json(result)
         })

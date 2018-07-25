@@ -20,11 +20,8 @@
       <file leaf-file-name="mongo.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mongo.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="31" column="12" selection-start-line="31" selection-start-column="6" selection-end-line="31" selection-end-column="12" />
-              <folding>
-                <element signature="e#2860#3129#0" />
-              </folding>
+            <state relative-caret-position="335">
+              <caret line="128" column="39" selection-start-line="128" selection-start-column="39" selection-end-line="128" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -41,8 +38,8 @@
       <file leaf-file-name="app.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="555">
-              <caret line="512" column="19" lean-forward="true" selection-start-line="512" selection-start-column="19" selection-end-line="512" selection-end-column="19" />
+            <state relative-caret-position="216">
+              <caret line="211" column="49" selection-start-line="211" selection-start-column="47" selection-end-line="211" selection-end-column="49" />
               <folding>
                 <element signature="e#436#468#0" />
                 <element signature="e#494#765#0" />
@@ -51,9 +48,6 @@
                 <element signature="e#867#1003#0" />
                 <element signature="e#1143#1275#0" />
                 <element signature="e#1279#1372#0" />
-                <element signature="e#1424#3830#0" />
-                <element signature="e#1481#3816#0" />
-                <element signature="e#1602#3815#0" />
                 <element signature="e#1839#2101#0" />
                 <element signature="e#2137#2225#0" />
                 <element signature="e#2509#2593#0" />
@@ -80,10 +74,7 @@
                 <element signature="e#5735#5794#0" />
                 <element signature="e#5808#5867#0" />
                 <element signature="e#5882#5920#0" />
-                <element signature="e#5978#7269#0" />
                 <element signature="e#6071#6128#0" />
-                <element signature="e#6167#6839#0" />
-                <element signature="e#6241#6395#0" />
                 <element signature="e#6409#6832#0" />
                 <element signature="e#6545#6820#0" />
                 <element signature="e#6572#6686#0" />
@@ -148,7 +139,6 @@
                 <element signature="e#13366#13456#0" />
                 <element signature="e#13470#13512#0" />
                 <element signature="e#13527#13580#0" />
-                <element signature="e#13635#14132#0" />
                 <element signature="e#13736#13783#0" />
                 <element signature="e#13807#13896#0" />
                 <element signature="e#14137#14174#0" />
@@ -176,8 +166,9 @@
       <find>readcontent</find>
       <find>writeanal</find>
       <find>getuserpreivew</find>
-      <find>readallrating</find>
       <find>writerating</find>
+      <find>readallrating</find>
+      <find>yo</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -262,12 +253,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1532540032053</updated>
-      <workItem from="1532540035694" duration="4063000" />
+      <workItem from="1532540035694" duration="5280000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4063000" />
+    <option name="totallyTimeSpent" value="5280000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="797" extended-state="6" />
@@ -309,8 +300,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
-          <caret line="512" column="19" lean-forward="true" selection-start-line="512" selection-start-column="19" selection-end-line="512" selection-end-column="19" />
+        <state relative-caret-position="216">
+          <caret line="211" column="49" selection-start-line="211" selection-start-column="47" selection-end-line="211" selection-end-column="49" />
           <folding>
             <element signature="e#436#468#0" />
             <element signature="e#494#765#0" />
@@ -319,9 +310,6 @@
             <element signature="e#867#1003#0" />
             <element signature="e#1143#1275#0" />
             <element signature="e#1279#1372#0" />
-            <element signature="e#1424#3830#0" />
-            <element signature="e#1481#3816#0" />
-            <element signature="e#1602#3815#0" />
             <element signature="e#1839#2101#0" />
             <element signature="e#2137#2225#0" />
             <element signature="e#2509#2593#0" />
@@ -348,10 +336,7 @@
             <element signature="e#5735#5794#0" />
             <element signature="e#5808#5867#0" />
             <element signature="e#5882#5920#0" />
-            <element signature="e#5978#7269#0" />
             <element signature="e#6071#6128#0" />
-            <element signature="e#6167#6839#0" />
-            <element signature="e#6241#6395#0" />
             <element signature="e#6409#6832#0" />
             <element signature="e#6545#6820#0" />
             <element signature="e#6572#6686#0" />
@@ -416,7 +401,6 @@
             <element signature="e#13366#13456#0" />
             <element signature="e#13470#13512#0" />
             <element signature="e#13527#13580#0" />
-            <element signature="e#13635#14132#0" />
             <element signature="e#13736#13783#0" />
             <element signature="e#13807#13896#0" />
             <element signature="e#14137#14174#0" />
@@ -426,11 +410,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mongo.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="31" column="12" selection-start-line="31" selection-start-column="6" selection-end-line="31" selection-end-column="12" />
-          <folding>
-            <element signature="e#2860#3129#0" />
-          </folding>
+        <state relative-caret-position="335">
+          <caret line="128" column="39" selection-start-line="128" selection-start-column="39" selection-end-line="128" selection-end-column="39" />
         </state>
       </provider>
     </entry>

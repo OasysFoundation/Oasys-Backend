@@ -115,16 +115,17 @@ function query(collectionName, operation, ...params) { //add option to pass call
                 const collection = db.collection(collectionName);
 
                 const mongoDBquery = operation === 'find'
+                    //because find doesn't return a promise like update, insert and so on
                     ? () => collection[operation](...params).toArray()
                     : () => collection[operation](...params)
 
                 mongoDBquery()
                     .then(data => {
-                        console.log(data)
-                        console.log(
-                            `**///////  DATA
-                         ::: @ Collection: ${collectionName}
-                         ::: @ Operation: ${operation}`)
+                        // console.log(data)
+                        // console.log(
+                        //     `**///////  DATA
+                        //  ::: @ Collection: ${collectionName}
+                        //  ::: @ Operation: ${operation}`)
                         resolve(data)
                         client.close();
                     })

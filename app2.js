@@ -234,19 +234,25 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
   userId = req.params.userId;
   username = req.params.username;
 
-  mongo.uploadUsername(userId, username, function(result,err) { 
-    if (err){
-      console.log(err);
-      res.end("Unexpected Error from Db");
-    }
+  if (username.indexOf('-') == -1){
 
-    else if (!result){
-      res.json({"userNameExists":true}); 
-    }
-    else{
-      res.json({"userNameExists":false})
-    }
-  });
+    mongo.uploadUsername(userId, username, function(result,err) { 
+      if (err){
+        console.log(err);
+        res.end("Unexpected Error from Db");
+      }
+
+      else if (!result){
+        res.json({"userNameExists":true}); 
+      }
+      else{
+        res.json({"userNameExists":false})
+      }
+    });
+  }
+  else {
+    res.json({"hyphen":true});
+  }
 
 });
 

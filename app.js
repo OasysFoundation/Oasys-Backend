@@ -303,7 +303,7 @@ app.post('/save/:userId/:contentId', function (req, res) {
 Helper function for calculating rating avg
 */
 function getRating(userId, contentId, extra, callback) {
-    mongo.readRatingFromMongo(userId, contentId, function (result, err) {
+    mongo.getRatingsForContent(userId, contentId, function (result, err) {
         if (err) {
             console.log(err);
             res.end("Unexpected Error from Db");
@@ -379,20 +379,19 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
         console.log('File uploaded successfully.');
 
         var newUrl = request.files[0].location;
-        console.log(newUrl);
+        console.log('newURL here:  ', newUrl);
 
-        mongo.uploadTitlePicture(userId, contentId, newUrl, function (result, err) {
-            if (err) {
-                console.log(err);
-                response.end("Unexpected Error from Db");
-            }
-            else {
-                console.log("WE MADE IT")
-                response.json({"success": true});
-            }
-        });
+        mongo.uploadTitlePicture(userId, contentId, newUrl)
+            .then(result => {
+                console.log(`Title picture uploaded!! `)
+                return res.json(result)})
+            .catch(err => {
+                console.info(err)
+                res.end("Unexpected Error from Db")
+            });
     });
 });
+
 
 /*
 Get all information from "users" db
@@ -492,9 +491,7 @@ app.post('/saveUserContentAccess', function (req, res) {
 Get Analytics data for content from "analytics" db
 */
 app.get('/getAllContentsForUser/:userId/', function (req, res) {
-
     userId = req.params.userId;
-
     mongo.readAnalyticsFromUsersMongo(userId)
         .then(result => res.json(result))
         .catch(err => {
@@ -527,7 +524,10 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
     contentId = req.params.contentId;
 
     mongo.readAnalyticsFromContentsMongo(userId, contentId)
-        .then(result => {console.log(res.json, "TYPE :", typeof res.json); return res.json(result)})
+        .then(result => {
+            console.log(res.json, "TYPE :", typeof res.json);
+            return res.json(result)
+        })
         .catch(err => {
             console.info(err)
             res.end("Unexpected Error from Db")
@@ -561,8 +561,10 @@ app.get('/getAllRatings/:userId', function (req, res) {
 
     userId = req.params.userId;
 
-    mongo.readAllRatingsFromMongo(userId)
-        .then(result => {return res.json(result)})
+    mongo.getAllRatingsFromMongo(userId)
+        .then(result => {
+            return res.json(result)
+        })
         .catch(err => {
             console.info(err)
             res.end("Unexpected Error from Db")

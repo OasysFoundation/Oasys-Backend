@@ -106,17 +106,6 @@ const getUserPreview = function (db, callback) {
     });
 }
 
-
-// Returns all ratings for given content Id
-const findRating = function (db, userId, contentId, callback) {
-    const collection = db.collection('ratings');
-    collection.find({'userId': userId, 'contentId': contentId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log(result)
-        callback(result);
-    });
-}
-
 // saves content to "contents" db
 const saveContent = function (db, userId, contentId, data, callback) {
     var newData = data.data;
@@ -248,26 +237,6 @@ exports.writeCommentToMongo = function (data, userId, contentId, callback) {
     });
 };
 
-
-// Reads from "contents" db
-
-
-//readPreviewFromMongo =
-// function (callback) {
-//     MongoClient.connect(url, function (err, db) {
-//         // const db = client.db()
-//         if (err) throw err;
-//         else {
-//             console.log("Connected successfully to db");
-//             getPreview(db, function (result, err) {
-//                 if (err) throw err;
-//                 db.close();
-//                 callback(result);
-//             });
-//         }
-//     });
-// };
-
 // Reads from "contents" db
 exports.readUserPreviewFromMongo = function (callback) {
     MongoClient.connect(url, function (err, db) {
@@ -287,19 +256,6 @@ exports.readUserPreviewFromMongo = function (callback) {
 
 
 //Reads from "ratings" db
-exports.readRatingFromMongo = function (userId, contentId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to server");
-            findRating(db, userId, contentId, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
 
 exports.uploadUsername = function (userId, username, callback) {
     MongoClient.connect(url, function (err, db) {
@@ -329,19 +285,6 @@ exports.uploadPicture = function (userId, newUrl, callback) {
     });
 };
 
-exports.uploadTitlePicture = function (userId, contentId, newUrl, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to server");
-            newTitlePic(db, userId, contentId, newUrl, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
 
 exports.getProfile = function (userId, callback) {
     MongoClient.connect(url, function (err, db) {
@@ -360,7 +303,9 @@ exports.getProfile = function (userId, callback) {
 
 const MongoX = {
 
-    readAllRatings(userId) => query('ratings', 'find', {userId: userId}),
+    getAllRatings: (userId) => query('ratings', 'find', {userId: userId}),
+    getRatingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId})
+
     writeRating:
         (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
             contentId,
@@ -382,12 +327,22 @@ const MongoX = {
         "contentUserId": userId
     }),
 
-    readAnalyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId})
+    readAnalyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId}),
+
+    uploadTitlePicture(userId, contentId, newUrl){
+        return  query('contents', 'update', {
+            "contentId": contentId,
+            "userId": userId
+        }, {$set: {"picture": newUrl}}, {"upsert": true})
+    }
 }
 
+exports.uploadTitlePicture = MongoX.uploadTitlePicture;
+
+exports.getAllRatingsFromMongo = MongoX.getAllRatings;
+exports.getRatingsForContent = MongoX.getRatingsForContent;
 
 exports.readPreviewFromMongo = MongoX.getContentsPreview;
-exports.readAllRatingsFromMongo = MongoX.readAllRatings;
 exports.readAnalyticsFromUsersMongo = MongoX.readAnalyticsFromUsers;
 exports.readAnalyticsFromCreatorMongo = MongoX.readAnalyticsFromCreator;
 exports.readAllRatingsFromMongo = MongoX.readAllRatings;

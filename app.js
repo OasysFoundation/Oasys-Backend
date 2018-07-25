@@ -495,16 +495,12 @@ app.get('/getAllContentsForUser/:userId/', function (req, res) {
 
     userId = req.params.userId;
 
-    mongo.readAnalyticsFromUsersMongo(userId, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
-
+    mongo.readAnalyticsFromUsersMongo(userId)
+        .then(result => res.json(result))
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        });
 });
 
 /*
@@ -514,16 +510,12 @@ app.get('/getAllContentsForCreator/:userId/', function (req, res) {
 
     userId = req.params.userId;
 
-    mongo.readAnalyticsFromCreatorMongo(userId, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
-
+    mongo.readAnalyticsFromCreatorMongo(userId)
+        .then(result => res.json(result))
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        });
 });
 
 /*
@@ -534,16 +526,12 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
     userId = req.params.userId;
     contentId = req.params.contentId;
 
-    mongo.readAnalyticsFromContentsMongo(userId, contentId, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-        else {
-            res.json(result);
-        }
-    });
-
+    mongo.readAnalyticsFromContentsMongo(userId, contentId)
+        .then(result => {console.log(res.json, "TYPE :", typeof res.json); return res.json(result)})
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        })
 });
 
 /*
@@ -574,7 +562,7 @@ app.get('/getAllRatings/:userId', function (req, res) {
     userId = req.params.userId;
 
     mongo.readAllRatingsFromMongo(userId)
-        .then(result => {console.log(res.json, "TYPE :", typeof res.json); return res.json(result)})
+        .then(result => {return res.json(result)})
         .catch(err => {
             console.info(err)
             res.end("Unexpected Error from Db")

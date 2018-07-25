@@ -106,75 +106,6 @@ const getUserPreview = function (db, callback) {
     });
 }
 
-// Returns full JSON of specified user id and content id
-const findContent = function (userId, contentId, db, callback) {
-    const collection = db.collection('contents');
-    collection.find({'userId': userId, 'contentId': contentId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
-
-// Returns full JSON of specified user id and content id
-const findComments = function (userId, contentId, slideNumber, db, callback) {
-    const collection = db.collection('comments');
-    collection.find({
-        'contentId': contentId,
-        'userId': userId,
-        'slideNumber': slideNumber
-    }).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
-
-// Returns full JSON of specified user id and content id
-const findAnalyticsUsers = function (userId, db, callback) {
-    const collection = db.collection('analytics');
-    collection.find({'accessUserId': userId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
-
-// Returns full JSON of specified user id and content id
-const findAllComments = function (userId, db, callback) {
-    const collection = db.collection('comments');
-    collection.find({'userId': userId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
-
-// Returns full JSON of specified user id and content id
-const findAnalyticsCreator = function (userId, db, callback) {
-    const collection = db.collection('analytics');
-    collection.find({'contentUserId': userId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
-
-// Returns full JSON of specified user id and content id
-const findAnalyticsContents = function (userId, contentId, db, callback) {
-    const collection = db.collection('analytics');
-    collection.find({'contentId': contentId, "contentUserId": userId}).toArray(function (err, result) {
-        if (err) throw err;
-        console.log("db response: ")
-        console.log(result)
-        callback(result);
-    });
-}
 
 // Returns all ratings for given content Id
 const findRating = function (db, userId, contentId, callback) {
@@ -223,81 +154,6 @@ const saveContent = function (db, userId, contentId, data, callback) {
         else {
             console.log("Update successful");
             callback(result);
-        }
-    });
-}
-
-// saves content to "contents" db
-const saveComment = function (db, userId, contentId, data, callback) {
-    console.log(data);
-    var time = data.time;
-    var newComment = data.comment;
-    var parent = data.parent;
-    var slideNumber = data.slideNumber;
-    var accessUser = data.accessUser;
-    const collection = db.collection('comments');
-    collection.insertOne({
-        "contentId": contentId,
-        'userId': userId,
-        "accessUser": accessUser,
-        "time": time,
-        "comment": newComment,
-        "parent": parent,
-        "slideNumber": slideNumber
-    }, function (err, result) {
-        if (err) throw err;
-        console.log(result);
-        callback(result);
-    });
-}
-
-// saves content to "contents" db
-const saveAnalytics = function (db, data, callback) {
-    console.log(data);
-    var startTime = data.startTime;
-    var endTime = data.endTime;
-    var contentId = data.contentId;
-    var contentUserId = data.contentUserId;
-    var accessUserId = data.accessUserId;
-    var accessTimes = data.accessTimes;
-    const collection = db.collection('analytics');
-
-    collection.find({
-        "startTime": startTime,
-        "contentId": contentId,
-        "contentUserId": contentUserId
-    }).toArray(function (err, docs) {
-        if (err) throw err;
-
-        if (docs.length > 0) {
-            collection.update({
-                "contentId": contentId,
-                "startTime": startTime,
-                "contentUserId": contentUserId
-            }, {$set: {"endTime": endTime, "accessTimes": accessTimes}}, {"upsert": false}, function (err, result) {
-                if (err) throw err;
-                else {
-                    console.log("Update successful");
-                    callback(result);
-                }
-            });
-        }
-        else {
-            collection.insertOne({
-                "startTime": startTime,
-                "endTime": endTime,
-                "contentId": contentId,
-                'contentUserId': contentUserId,
-                "accessUserId": accessUserId,
-                "accessTimes": accessTimes
-            }, function (err, result) {
-                if (err) throw err;
-                else {
-                    console.log("insert successful")
-                    console.log(result);
-                    callback(result);
-                }
-            });
         }
     });
 }
@@ -396,7 +252,6 @@ exports.writeCommentToMongo = function (data, userId, contentId, callback) {
 // Reads from "contents" db
 
 
-
 //readPreviewFromMongo =
 // function (callback) {
 //     MongoClient.connect(url, function (err, db) {
@@ -428,34 +283,8 @@ exports.readUserPreviewFromMongo = function (callback) {
     });
 };
 
-// Reads from "contents" db
-exports.readContentFromMongo = function (userId, contentId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findContent(userId, contentId, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
+// Reads content (from title?!) from a user
 
-exports.readCommentsFromMongo = function (userId, contentId, slideNumber, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findComments(userId, contentId, slideNumber, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
 
 //Reads from "ratings" db
 exports.readRatingFromMongo = function (userId, contentId, callback) {
@@ -529,81 +358,92 @@ exports.getProfile = function (userId, callback) {
 };
 
 
-// Write to "contents" db
+const MongoX = {
+
+    readAllRatings(userId) => query('ratings', 'find', {userId: userId}),
+    writeRating:
+        (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
+            contentId,
+            userId,
+            rating: parseInt(rating),
+            accessUser
+        }),
+
+    getContentsPreview: () => query('contents', 'find', {published: 1, featured: true}),
+
+    readContent: (userId, contentId) => query('contents', 'find', {'userId': userId, 'contentId': contentId}),
+
+    //analytics
+    // Returns full JSON of specified user id
+    readAnalyticsFromCreator: (userId) => query('analytics', 'find', {'contentUserId': userId}),
+
+    readAnalyticsFromContent: (userId, contentId) => query('analytics', 'find', {
+        'contentId': contentId,
+        "contentUserId": userId
+    }),
+
+    readAnalyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId})
+}
+
+
+exports.readPreviewFromMongo = MongoX.getContentsPreview;
+exports.readAllRatingsFromMongo = MongoX.readAllRatings;
+exports.readAnalyticsFromUsersMongo = MongoX.readAnalyticsFromUsers;
+exports.readAnalyticsFromCreatorMongo = MongoX.readAnalyticsFromCreator;
+exports.readAllRatingsFromMongo = MongoX.readAllRatings;
 exports.writeAnalyticsDataToMongo = function (data, callback) {
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(url, function (err, client) {
         if (err) throw err;
-        else {
+        const db = client.db()
+        {
             console.log("Connected successfully to server");
             saveAnalytics(db, data, function (result, err) {
                 if (err) throw err;
-                db.close();
+                client.close();
                 callback(result);
             });
         }
     });
 };
 
-exports.readAnalyticsFromUsersMongo = function (userId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findAnalyticsUsers(userId, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
+// saves content to "contents" db
+const saveAnalytics = function (db, data, callback) {
+    console.log('SaveAnalytics data input: ', data);
+    const {
+        startTime, endTime, contentId,
+        contentUserId, accessUserId, accessTimes
+    } = data;
+    const collection = db.collection('analytics');
+    collection.find({startTime, contentId, contentUserId})
+        .toArray(function (err, docs) {
+            if (err) throw err;
 
-exports.readAnalyticsFromContentsMongo = function (userId, contentId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findAnalyticsContents(userId, contentId, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
-
-exports.readAnalyticsFromCreatorMongo = function (userId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findAnalyticsCreator(userId, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
-
-exports.readAllCommentsFromMongo = function (userId, callback) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) throw err;
-        else {
-            console.log("Connected successfully to db");
-            findAllComments(userId, db, function (result, err) {
-                if (err) throw err;
-                db.close();
-                callback(result);
-            });
-        }
-    });
-};
-
-const MongoX = {
-    readAllRatings: (userId) => query('ratings', 'find', {userId: userId}),
-    getContentsPreview: () => query('contents', 'find', ({published: 1, featured: true}))
+            if (docs.length > 0) {
+                collection.update({contentId, startTime, contentUserId},
+                    {$set: {"endTime": endTime, "accessTimes": accessTimes}},
+                    {"upsert": false}, function (err, result) {
+                        if (err) throw err;
+                        else {
+                            console.log("Update successful");
+                            callback(result);
+                        }
+                    });
+            }
+            else {
+                collection.insertOne({startTime, endTime, contentId, contentUserId, accessUserId, accessTimes},
+                    function (err, result) {
+                        if (err) throw err;
+                        else {
+                            console.log("insert successful")
+                            console.log(result);
+                            callback(result);
+                        }
+                    });
+            }
+        });
 }
+
+// Write to "contents" db
 
 
 function query(collectionName, operation, ...params) { //add option to pass callback directly
@@ -637,17 +477,14 @@ function query(collectionName, operation, ...params) { //add option to pass call
     })
 }
 
-exports.readPreviewFromMongo = MongoX.getContentsPreview;
-exports.readAllRatingsFromMongo = MongoX.readAllRatings;
 
-
-// Write to "ratings" db
-exports.WriteRatingToMongo = function (userId, contentId, rating, accessUser, callback) {
+//phase out
+exports.readAllCommentsFromMongo = function (userId, callback) {
     MongoClient.connect(url, function (err, db) {
         if (err) throw err;
         else {
-            console.log("Connected successfully to server");
-            writeRating(db, userId, contentId, rating, accessUser, function (result, err) {
+            console.log("Connected successfully to db");
+            findAllComments(userId, db, function (result, err) {
                 if (err) throw err;
                 db.close();
                 callback(result);
@@ -656,21 +493,99 @@ exports.WriteRatingToMongo = function (userId, contentId, rating, accessUser, ca
     });
 };
 
-// writes rating to ratings db
-const writeRating = function (db, userId, contentId, rating, accessUser, callback) {
-    const collection = db.collection('ratings');
-    rating = parseInt(rating);
+exports.readCommentsFromMongo = function (userId, contentId, slideNumber, callback) {
+    MongoClient.connect(url, function (err, db) {
+        if (err) throw err;
+        else {
+            console.log("Connected successfully to db");
+            findComments(userId, contentId, slideNumber, db, function (result, err) {
+                if (err) throw err;
+                db.close();
+                callback(result);
+            });
+        }
+    });
+};
+
+
+// saves content to "contents" db
+const saveComment = function (db, userId, contentId, data, callback) {
+    console.log(data);
+    var time = data.time;
+    var newComment = data.comment;
+    var parent = data.parent;
+    var slideNumber = data.slideNumber;
+    var accessUser = data.accessUser;
+    const collection = db.collection('comments');
     collection.insertOne({
         "contentId": contentId,
         'userId': userId,
-        "rating": rating,
-        "accessUser": accessUser
+        "accessUser": accessUser,
+        "time": time,
+        "comment": newComment,
+        "parent": parent,
+        "slideNumber": slideNumber
     }, function (err, result) {
         if (err) throw err;
         console.log(result);
         callback(result);
     });
 }
+// Returns full JSON of specified user id and content id
+const findAllComments = function (userId, db, callback) {
+    const collection = db.collection('comments');
+    collection.find({'userId': userId}).toArray(function (err, result) {
+        if (err) throw err;
+        console.log("db response: ")
+        console.log(result)
+        callback(result);
+    });
+}
+// Returns full JSON of specified user id and content id
+const findComments = function (userId, contentId, slideNumber, db, callback) {
+    const collection = db.collection('comments');
+    collection.find({
+        'contentId': contentId,
+        'userId': userId,
+        'slideNumber': slideNumber
+    }).toArray(function (err, result) {
+        if (err) throw err;
+        console.log("db response: ")
+        console.log(result)
+        callback(result);
+    });
+}
+
+// Write to "ratings" db
+// exports.WriteRatingToMongo = function (userId, contentId, rating, accessUser, callback) {
+//     MongoClient.connect(url, function (err, db) {
+//         if (err) throw err;
+//         else {
+//             console.log("Connected successfully to server");
+//             writeRating(db, userId, contentId, rating, accessUser, function (result, err) {
+//                 if (err) throw err;
+//                 db.close();
+//                 callback(result);
+//             });
+//         }
+//     });
+// };
+//
+// // writes rating to ratings db
+// const writeRating = function (db, userId, contentId, rating, accessUser, callback) {
+//     const collection = db.collection('ratings');
+//     rating = parseInt(rating);
+//     collection.insertOne({
+//         "contentId": contentId,
+//         'userId': userId,
+//         "rating": rating,
+//         "accessUser": accessUser
+//     }, function (err, result) {
+//         if (err) throw err;
+//         console.log(result);
+//         callback(result);
+//     });
+// }
 
 
 

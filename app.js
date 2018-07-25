@@ -108,20 +108,6 @@ app.get('/GetContentsPreview', function (req, res) {
         )
 }
 
-
-res.json(data)
-})
-
-.
-catch(err => res.end('DB error'));
-
-
-}
-})
-;
-})
-;
-
 /*
 Loads full JSON of selected experience from “contents” db
 */
@@ -515,17 +501,6 @@ app.get('/getAllRatings/:userId', function (req, res) {
             console.info(err)
             res.end("Unexpected Error from Db")
         })
-
-    //     function (result, err) {
-    //     if (err) {
-    //         console.log(err);
-    //         res.end("Unexpected Error from Db");
-    //     }
-    //     else {
-    //         res.json(result);
-    //     }
-    // });
-
 });
 
 

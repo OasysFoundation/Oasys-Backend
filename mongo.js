@@ -13,11 +13,6 @@ const url = f('mongodb://%s:%s@localhost:27017/oasysTest?authMechanism=%s',
     user, password, authMechanism);
 
 var exports = module.exports = {};
-
-/***************************
- Reading from Mongo (helper functions)
- ***************************/
-
 'use strict';
 // Write to "contents" db
 exports.writeContentToMongo = function (status, data, userId, contentId) {
@@ -34,25 +29,11 @@ exports.writeContentToMongo = function (status, data, userId, contentId) {
     }, {"upsert": true})
 };
 
-exports.uploadUsername = function (userId, username, callback) {
-    query('users', 'find',{'NAME': username})
-        .then(result => {
-            result.length
-                ? callback()
-                : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
-                    .then(res => callback(res))
-        })
-};
-
-//TODO app.js still change to promise!
 const MongoX = {
     getAllRatings: (userId) => query('ratings', 'find', {userId: userId}),
     getRatingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
 
     getProfile: (userId) => query('users', 'find', {'UID': userId}),
-
-
-    // uploadUserName: (userId, userName) => query('users')
 
     writeRating: (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
         contentId,
@@ -75,7 +56,6 @@ const MongoX = {
 
     readAnalyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId}),
 
-
     uploadProfilePicture: (userId, newUrl) => query('users', 'update', {"UID": userId}, {$set: {"PIC": newUrl}}, {"upsert": true}),
 
     uploadTitlePicture(userId, contentId, newUrl) {
@@ -88,6 +68,15 @@ const MongoX = {
 }
 
 exports.uploadProfilePicture = MongoX.uploadProfilePicture;
+exports.uploadUsername = function (userId, username, callback) {
+    query('users', 'find', {'NAME': username})
+        .then(result => {
+            result.length
+                ? callback()
+                : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
+                    .then(callback)
+        })
+};
 exports.getProfile = MongoX.getProfile;
 exports.writeRatingToMongo = MongoX.writeRating;
 exports.uploadTitlePicture = MongoX.uploadTitlePicture;
@@ -110,14 +99,13 @@ exports.writeAnalyticsDataToMongo = function (data, callback) {
 
     query('analytics', 'find', {startTime, contentId, contentUserId})
         .then(result => {
-            if (result.length) {
-                query('analytics', 'update', {contentId, startTime, contentUserId},
-                    {$set: {endTime, accessTimes}},
-                    {"upsert": false})
+            result.length
+                ? query('analytics', 'update', {contentId, startTime, contentUserId},
+                {$set: {endTime, accessTimes}},
+                {"upsert": false})
                     .then(res => callback(res))
-            }
-            else {
-                query('analytics', 'insertOne', {
+
+                : query('analytics', 'insertOne', {
                     startTime,
                     endTime,
                     contentId,
@@ -126,13 +114,12 @@ exports.writeAnalyticsDataToMongo = function (data, callback) {
                     accessTimes
                 })
                     .then(res => callback(res))
-            }
         })
         .catch(err => {
             console.log("didn't find analytics @ save analytics");
             throw err
         })
-}
+};
 
 // Write to "contents" db
 function query(collectionName, operation, ...params) { //add option to pass callback directly
@@ -157,7 +144,6 @@ function query(collectionName, operation, ...params) { //add option to pass call
                         reject(err)
                         client.close();
                     })
-
             })
             .catch(err => {
                 throw err

@@ -22,10 +22,10 @@ Reading from Mongo (helper functions)
 // Gets profile data from "users" db 
 const getProfileData = function(db, userId, callback) {
   const collection = db.collection('users');
-  console.log(userId);
+  
   collection.find({'UID': userId}).toArray(function(err, docs) {
     if (err) throw err;
-    console.log(docs);
+    
     callback(docs);
   });    
 };
@@ -36,7 +36,7 @@ const newPicture = function(db, userId, newUrl, callback) {
   collection.update({"UID": userId}, { $set: { "PIC" : newUrl } }, {"upsert": true}, function(err, result) {
     if (err) throw err;
     else{
-      console.log("Update successful");
+      
       callback(result);
     }
   });      
@@ -44,15 +44,15 @@ const newPicture = function(db, userId, newUrl, callback) {
 
 const newTitlePic = function(db, userId, contentId, newUrl, callback) {
   const collection = db.collection('contents');
-  console.log("BOUT TO UPDATE");
+  
 
   collection.update({"contentId": contentId, "userId":userId}, { $set: { "picture" : newUrl } }, {"upsert": true}, function(err, result) {
     if (err) {
-      console.log(err);
+      
       throw err;
     }
     else{
-      console.log("Update successful");
+      
       callback(result);
     }
   });     
@@ -65,14 +65,14 @@ const newUsername = function(db, userId, username, callback) {
     if (err) throw err;
     
     if(docs.length>0) {
-      console.log("my docs");
-      console.log(docs);
+      
+      
       callback();
     }
     else{
       collection.insertOne({"UID": userId, 'NAME': username, "PIC": ''}, function(err, result) {
         if (err) throw err;
-        console.log(result);
+        
         callback(result);
       });  
     }
@@ -85,8 +85,8 @@ const getPreview = function(db, callback) {
   const collection = db.collection('contents');
   collection.find({'published': 1, 'featured' : true}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -96,8 +96,8 @@ const getUserPreview = function(db, callback) {
   const collection = db.collection('contents');
   collection.find().toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -107,8 +107,8 @@ const findContent = function(userId, contentId, db, callback) {
   const collection = db.collection('contents');
   collection.find({'userId': userId , 'contentId': contentId}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -118,8 +118,8 @@ const findComments = function(userId, contentId, slideNumber, db, callback) {
   const collection = db.collection('comments');
   collection.find({'contentId': contentId, 'userId': userId,'slideNumber': slideNumber}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -129,8 +129,8 @@ const findAnalyticsUsers = function(userId, db, callback) {
   const collection = db.collection('analytics');
   collection.find({'accessUserId': userId}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -140,8 +140,8 @@ const findAllComments = function(userId, db, callback) {
   const collection = db.collection('comments');
   collection.find({'userId': userId}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -151,8 +151,8 @@ const findAllRatings = function(userId, db, callback) {
   const collection = db.collection('ratings');
   collection.find({'userId': userId}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -163,8 +163,8 @@ const findAnalyticsCreator = function(userId, db, callback) {
   const collection = db.collection('analytics');
   collection.find({'contentUserId': userId}).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -175,7 +175,7 @@ const writeWallet = function(userId, walletId, db, callback) {
   collection.update({"UID": userId}, { $set: { "walletId" : walletId } }, {"upsert": true}, function(err, result) {
     if (err) throw err;
     else{
-      console.log("Update successful");
+      
       callback(result);
     }
   }); 
@@ -186,8 +186,8 @@ const findAnalyticsContents = function(userId, contentId, db, callback) {
   const collection = db.collection('analytics');
   collection.find({'contentId': contentId, "contentUserId" :userId }).toArray(function(err, result) {
       if (err) throw err;
-      console.log("db response: ")
-      console.log(result)
+      
+      
       callback(result);
     });
 }
@@ -197,7 +197,7 @@ const findRating = function(db, userId, contentId, callback) {
   const collection = db.collection('ratings');
   collection.find({'userId': userId ,'contentId': contentId}).toArray(function(err, result) {
     if (err) throw err;
-    console.log(result)
+    
     callback(result);
   });
 }
@@ -208,7 +208,7 @@ const writeRating = function(db, userId, contentId, rating, accessUser, callback
   rating = parseInt(rating);
   collection.insertOne({"contentId": contentId, 'userId': userId, "rating": rating, "accessUser": accessUser}, function(err, result) {
     if (err) throw err;
-    console.log(result);
+    
     callback(result);
   });  
 }
@@ -226,8 +226,8 @@ const saveContent = function(db, userId, contentId, data, callback) {
 
   const collection = db.collection('contents');
 
-  console.log(contentId);
-  console.log(userId);
+  
+  
 
 
   collection.find({'contentId': contentId, 'userId':userId, 'published':1}).toArray(function(err, docs) {
@@ -239,11 +239,11 @@ const saveContent = function(db, userId, contentId, data, callback) {
     else{
       collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
         if (err) {
-          console.log(err)
+          
           throw err;
         }
         else{
-          console.log("Update successful");
+          
           callback(result);
         }
       });   
@@ -253,7 +253,7 @@ const saveContent = function(db, userId, contentId, data, callback) {
 
 // saves content to "contents" db
 const saveComment = function(db, userId, contentId, data, callback) {
-  console.log(data);
+  
   var time = data.time;
   var newComment = data.comment;
   var parent = data.parent;
@@ -262,14 +262,14 @@ const saveComment = function(db, userId, contentId, data, callback) {
   const collection = db.collection('comments');
   collection.insertOne({"contentId": contentId, 'userId': userId, "accessUser":accessUser, "time": time, "comment":newComment, "parent": parent, "slideNumber": slideNumber}, function(err, result) {
     if (err) throw err;
-    console.log(result);
+    
     callback(result);
   });  
 }
 
 // saves content to "contents" db
 const saveAnalytics = function(db, data, callback) {
-  console.log(data);
+  
   var startTime = data.startTime;
   var endTime = data.endTime;
   var contentId = data.contentId;
@@ -280,24 +280,24 @@ const saveAnalytics = function(db, data, callback) {
   var quizzes = data.quizzes;
   const collection = db.collection('analytics');
 
-  console.log("quizzes = ")
-  console.log(quizzes);
-  console.log("update Type = ")
-  console.log(updateType)
-  console.log("startTime = ")
-  console.log(startTime);
+  
+  
+  
+  
+  
+  
 
   collection.find({"startTime": startTime, "contentId": contentId, "contentUserId": contentUserId}).toArray(function(err, docs) {
       if (err) throw err;
       
       if(docs.length>0) {
-        console.log("HERE 1")
+        
         if(updateType && updateType=="quizUpdate"){
-          console.log("HERE 2")
+          
           collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "quizzes": quizzes} }, {"upsert": false}, function(err, result) {
             if (err) throw err;
             else{
-              console.log("Update successful");
+              
               callback(result);
             }
           });
@@ -306,19 +306,19 @@ const saveAnalytics = function(db, data, callback) {
          collection.update({"contentId": contentId,"startTime":startTime,"contentUserId": contentUserId}, { $set: { "endTime": endTime, "accessTimes": accessTimes} }, {"upsert": false}, function(err, result) {
             if (err) throw err;
             else{
-              console.log("Update successful");
+              
               callback(result);
             }
           });  
         }
       }
       else{
-        console.log("landed here");
+        
         collection.insertOne({"startTime": startTime, "endTime": endTime, "contentId": contentId, 'contentUserId': contentUserId, "accessUserId": accessUserId, "accessTimes":accessTimes, "quizzes": quizzes}, function(err, result) {
           if (err) throw err;
           else{
-          console.log("insert successful")
-          console.log(result);
+          
+          
           callback(result);
           }
         });        
@@ -328,7 +328,7 @@ const saveAnalytics = function(db, data, callback) {
 
 // saves content including title,picture,url etc. and publishes content so preview mode can grab it
 const publishContent = function(db, userId, contentId, data, callback) {
-  console.log(data);
+  
   var newData = data.data;
   for (var i = 0; i < newData.length; i++){
     newData[0].thumb='null';
@@ -350,11 +350,11 @@ const publishContent = function(db, userId, contentId, data, callback) {
     else{
       collection.update({"contentId": contentId, "userId":userId}, { $set: { "data" : newData, "title": title, "description" : description, "published" : published, "tags":tags} }, {"upsert": true}, function(err, result) {
         if (err) {
-          console.log(err)
+          
           throw err;
         }
         else{
-          console.log("Update successful");
+          
           callback(result);
         }
       });   
@@ -382,7 +382,7 @@ exports.writeContentToMongo = function(status, data, userId, contentId, callback
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
       else {
-        console.log("Connected successfully to server");
+        
         saveContent(db, userId, contentId, data, function(result,err) {
           if (err) throw err;
            db.close();
@@ -395,7 +395,7 @@ exports.writeContentToMongo = function(status, data, userId, contentId, callback
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
       else {
-        console.log("Connected successfully to server");
+        
         publishContent(db, userId, contentId, data, function(result,err) {
           if (err) throw err;
            db.close();
@@ -412,7 +412,7 @@ exports.writeCommentToMongo = function(data, userId, contentId, callback) {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
       else {
-        console.log("Connected successfully to server");
+        
         saveComment(db, userId, contentId, data, function(result,err) {
           if (err) throw err;
            db.close();
@@ -428,7 +428,7 @@ exports.WriteRatingToMongo = function(userId, contentId, rating, accessUser, cal
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {
-      console.log("Connected successfully to server");
+      
       writeRating(db, userId, contentId, rating, accessUser, function(result,err) {
         if (err) throw err;
         db.close();
@@ -444,7 +444,7 @@ exports.readPreviewFromMongo = function(callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       getPreview(db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -459,7 +459,7 @@ exports.readUserPreviewFromMongo = function(callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       getUserPreview(db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -474,7 +474,7 @@ exports.readContentFromMongo = function(userId, contentId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findContent(userId, contentId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -488,7 +488,7 @@ exports.readCommentsFromMongo = function(userId, contentId, slideNumber, callbac
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findComments(userId, contentId, slideNumber, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -503,7 +503,7 @@ exports.readRatingFromMongo = function(userId, contentId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
-      console.log("Connected successfully to server");
+      
       findRating(db, userId, contentId, function(result,err) {
         if (err) throw err;
         db.close();
@@ -517,7 +517,7 @@ exports.uploadUsername = function(userId, username, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
-      console.log("Connected successfully to server");
+      
       newUsername(db, userId, username, function(result,err) {
         if (err) throw err;
         db.close();
@@ -531,7 +531,7 @@ exports.uploadPicture = function(userId, newUrl, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
-      console.log("Connected successfully to server");
+      
       newPicture(db, userId, newUrl, function(result,err) {
         if (err) throw err;
         db.close();
@@ -545,7 +545,7 @@ exports.uploadTitlePicture = function(userId, contentId, newUrl, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
-      console.log("Connected successfully to server");
+      
       newTitlePic(db, userId, contentId, newUrl, function(result,err) {
         if (err) throw err;
         db.close();
@@ -559,7 +559,7 @@ exports.getProfile = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else{
-      console.log("Connected successfully to server");
+      
       getProfileData(db, userId, function(result,err) {
         if (err) throw err;
         db.close();
@@ -575,7 +575,7 @@ exports.writeAnalyticsDataToMongo = function(data, callback) {
     MongoClient.connect(url, function(err, db) {
       if (err) throw err;
       else {
-        console.log("Connected successfully to server");
+        
         saveAnalytics(db, data, function(result,err) {
           if (err) throw err;
            db.close();
@@ -589,7 +589,7 @@ exports.readAnalyticsFromUsersMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findAnalyticsUsers(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -603,7 +603,7 @@ exports.readAnalyticsFromContentsMongo = function(userId, contentId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findAnalyticsContents(userId, contentId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -617,7 +617,7 @@ exports.readAnalyticsFromCreatorMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findAnalyticsCreator(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -631,7 +631,7 @@ exports.readAllCommentsFromMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findAllComments(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -645,7 +645,7 @@ exports.readAllRatingsFromMongo = function(userId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       findAllRatings(userId, db, function(result,err) {
         if (err) throw err;
         db.close();
@@ -659,7 +659,7 @@ exports.writeWalletToUsersMongo = function(userId, walletId, callback) {
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     else {   
-      console.log("Connected successfully to db");
+      
       writeWallet(userId, walletId, db, function(result,err) {
         if (err) throw err;
         db.close();

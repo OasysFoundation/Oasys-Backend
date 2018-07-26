@@ -11,6 +11,9 @@ const mongo = require('./mongo.js');
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
+const admin = require('firebase-admin');
+var serviceAccount = require('./serviceAccountKey.json');
+
 
 // Set S3 endpoint to DigitalOcean Spaces
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
@@ -25,7 +28,7 @@ const upload = multer({
     bucket: 'oasys-space',
     acl: 'public-read',
     key: function (request, file, cb) {
-      console.log(file);
+      
       //Unique identifier
       cb(null, Date.now().toString());
     }
@@ -34,6 +37,10 @@ const upload = multer({
 
 const app = express()
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://oasys-create.firebaseio.com'
+});
 
 //Middleware for CORS
 app.use(function(req, res, next) {
@@ -56,12 +63,12 @@ Loads picture, title, description, tags, and url from "contents" db with publish
 app.get('/GetContentsPreview', function (req, res) {
   mongo.readPreviewFromMongo(function(result, err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else {
       trueResult = [];
-      console.log(result.length);
+      
       for(i = 0; i < result.length; i++){
         //make call to avg rating .then{}
         var userId=result[i].userId;
@@ -71,14 +78,14 @@ app.get('/GetContentsPreview', function (req, res) {
           avg=response[0];
           i = response[1];
           numRatings = response[2];
-          console.log("response inside");
-          console.log(response);
-          console.log(i);
+          
+          
+          
           if (err) {
             res.end("Unexpected Error from Db");
           }
           else if(avg){
-            console.log("MADE IT INSIDE");
+            
             trueResult.push({
              "picture" :      result[i].picture,
              "title" :        result[i].title,
@@ -112,12 +119,12 @@ app.get('/GetContentsPreview', function (req, res) {
 app.get('/GetUserContentsPreview', function (req, res) {
   mongo.readUserPreviewFromMongo(function(result, err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else {
       trueResult = [];
-      console.log(result.length);
+      
       for(i = 0; i < result.length; i++){
         //make call to avg rating .then{}
         var userId=result[i].userId;
@@ -126,14 +133,14 @@ app.get('/GetUserContentsPreview', function (req, res) {
         getRating(userId,contentId, i, function(response,err){
           avg=response[0];
           i = response[1];
-          console.log("response inside");
-          console.log(response);
-          console.log(i);
+          
+          
+          
           if (err) {
             res.end("Unexpected Error from Db");
           }
           else if(avg){
-            console.log("MADE IT INSIDE");
+            
             trueResult.push({
              "picture" :      result[i].picture,
              "title" :        result[i].title,
@@ -175,7 +182,7 @@ app.get('/user/:userId/:contentId', function (req, res) {
 
   mongo.readContentFromMongo(userId, contentId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -196,7 +203,7 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
 
 
   getRating(userId,contentId, "",function(response,err){
-    console.log(response);
+    
     res.json(response[0]);
   })
 
@@ -212,11 +219,11 @@ app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
   rating = req.params.rating;
   accessUser = req.params.accessUser;
 
-  console.log("Test 1");
+  
 
   mongo.WriteRatingToMongo(userId, contentId, rating, accessUser, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -238,7 +245,7 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
 
     mongo.uploadUsername(userId, username, function(result,err) { 
       if (err){
-        console.log(err);
+        
         res.end("Unexpected Error from Db");
       }
 
@@ -259,58 +266,33 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
 /*
 Write data into to “contents” db
 */
-app.post('/save/:userId/:contentId', function (req, res) {
+app.post('/save/:userId/:contentId/:token', function (req, res) {
 
   userId = req.params.userId;
   contentId = req.params.contentId;
+  token = req.params.token;
 
   if (contentId.indexOf('-') == -1){
+    if(userId=="Anonymous"){
+      saveToDb(req,res,userId,contentId,token);
 
-     if(!req.body){
-        res.end("Error: Request body is empty.");
-      }
-      else if(req.body.published==1){
-        if(!req.body.title || !req.body.description || !req.body.tags ){
-          console.log("NOSIRE");
-          res.end("You cannot publish unless you provide the picture url, title, description, and tags");
-        }
-        else {
-          jsonBody =req.body;
-          mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 
-          if (err){
-            console.log(err);
-            res.end("Unexpected Error from Db");
+    }
+    else{
+       admin.auth().verifyIdToken(token)
+        .then(function(decodedToken) {
+          if(decodedToken.name==userId){
+            console.log("Token decoded");
+            saveToDb(req,res,userId,contentId,token);
           }
           else{
-            if(result==="alreadyPublished")
-              res.json({"alreadyPublished":true})
-            else{
-              console.log(result);
-              res.send(result); 
-            }
+            res.json({"notVerified":true}); 
           }
+        }).catch(function(error) {
+          
+          res.json({"notVerified":true}); 
         });
-        }
-
-      }
-      else{
-        console.log("STEP 4: NOT EXPECTED");
-        jsonBody =req.body;
-        mongo.writeContentToMongo("save", jsonBody, userId, contentId, function(result,err) { 
-          if (err){
-            console.log(err);
-            res.end("Unexpected Error from Db");
-          }
-          else{
-            if(result==="alreadyPublished")
-              res.json({"alreadyPublished":true})
-            else{
-              console.log(result);
-              res.send(result); 
-            }
-          }
-        });
-      }
+    }
+ 
   }
   else{
     res.json({"hyphen":true});
@@ -325,7 +307,7 @@ Helper function for calculating rating avg
 function getRating(userId,contentId,extra,callback){
   mongo.readRatingFromMongo(userId, contentId, function(result,err) { 
       if (err){
-        console.log(err);
+        
         res.end("Unexpected Error from Db");
       }
       else {
@@ -356,23 +338,23 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
   const files = request.files; // file passed from client
   const meta = request.data; // all other values passed from the client, like name, etc..
 
-  console.log(files);
-  console.log(meta);
+  
+  
 
 
   upload(request, response, function (error, success) {
     if (error) {
-      console.log(error);
+      
       response.end('{"error" : "Update failed", "status" : 404}');
     }
-    console.log(request.files)
-    console.log('File uploaded successfully.');
+    
+    
 
     var newUrl = request.files[0].location;
 
     mongo.uploadPicture(userId, newUrl, function(result,err) { 
       if (err){
-        console.log(err);
+        
         response.end("Unexpected Error from Db");
       }
       else {
@@ -392,22 +374,22 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
 
   upload(request, response, function (error, success) {
     if (error) {
-      console.log(error);
+      
       response.end('{"error" : "Update failed", "status" : 404}');
     }
-    console.log(request.files)
-    console.log('File uploaded successfully.');
+    
+    
 
     var newUrl = request.files[0].location;
-    console.log(newUrl);
+    
 
     mongo.uploadTitlePicture(userId, contentId, newUrl, function(result,err) { 
       if (err){
-        console.log(err);
+        
         response.end("Unexpected Error from Db");
       }
       else {
-        console.log("WE MADE IT")
+        
         response.json({"success":true}); 
       }
     });
@@ -423,7 +405,7 @@ app.get('/profile/:userId', function (request, response) {
 
   mongo.getProfile(userId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       response.end("Unexpected Error from Db");
     }
     else {
@@ -449,11 +431,11 @@ app.post('/comment/:userId/:contentId', function (req, res) {
       jsonBody =req.body;
       mongo.writeCommentToMongo(jsonBody, userId, contentId, function(result,err) { 
         if (err){
-          console.log(err);
+          
           res.end("Unexpected Error from Db");
         }
         else{
-          console.log(result);
+          
           res.send(result); 
         }
       });
@@ -473,7 +455,7 @@ app.get('/comment/:userId/:contentId/:slideNumber', function (req, res) {
 
   mongo.readCommentsFromMongo(userId, contentId, slideNumber, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -496,11 +478,11 @@ app.post('/saveUserContentAccess', function (req, res) {
       jsonBody =req.body;
       mongo.writeAnalyticsDataToMongo(jsonBody, function(result,err) { 
         if (err){
-          console.log(err);
+          
           res.end("Unexpected Error from Db");
         }
         else{
-          console.log(result);
+          
           res.send(result); 
         }
       });
@@ -517,7 +499,7 @@ app.get('/getAllContentsForUser/:userId/', function (req, res) {
 
   mongo.readAnalyticsFromUsersMongo(userId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -537,7 +519,7 @@ app.post('/postWalletId/:userId/:walletId', function (req, res) {
 
   mongo.writeWalletToUsersMongo(userId, walletId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -557,7 +539,7 @@ app.get('/getAllContentsForCreator/:userId/', function (req, res) {
 
   mongo.readAnalyticsFromCreatorMongo(userId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -577,7 +559,7 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
 
   mongo.readAnalyticsFromContentsMongo(userId, contentId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -596,7 +578,7 @@ app.get('/getAllComments/:userId', function (req, res) {
 
   mongo.readAllCommentsFromMongo(userId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -616,7 +598,7 @@ app.get('/getAllRatings/:userId', function (req, res) {
 
   mongo.readAllRatingsFromMongo(userId, function(result,err) { 
     if (err){
-      console.log(err);
+      
       res.end("Unexpected Error from Db");
     }
     else{
@@ -634,17 +616,66 @@ app.post('/uploadQuillPic', function (request, response) {
 
   upload(request, response, function (error, success) {
     if (error) {
-      console.log(error);
+      
       response.end('{"error" : "Update failed", "status" : 404}');
     }
-    console.log(request.files)
-    console.log('File uploaded successfully.');
+    
+    
 
     var newUrl = request.files[0].location;
-    console.log(newUrl);
+    
     response.json(newUrl);
   });
 });
+
+
+function saveToDb(req,res,userId,contentId,token){
+  if(!req.body){
+        res.end("Error: Request body is empty.");
+      }
+      else if(req.body.published==1){
+        if(!req.body.title || !req.body.description || !req.body.tags ){
+          
+          res.end("You cannot publish unless you provide the picture url, title, description, and tags");
+        }
+        else {
+          jsonBody =req.body;
+          mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function(result,err) { 
+          if (err){
+            
+            res.end("Unexpected Error from Db");
+          }
+          else{
+            if(result==="alreadyPublished")
+              res.json({"alreadyPublished":true})
+            else{
+              
+              res.send(result); 
+            }
+          }
+        });
+        }
+
+      }
+      else{
+        
+        jsonBody =req.body;
+        mongo.writeContentToMongo("save", jsonBody, userId, contentId, function(result,err) { 
+          if (err){
+            
+            res.end("Unexpected Error from Db");
+          }
+          else{
+            if(result==="alreadyPublished")
+              res.json({"alreadyPublished":true})
+            else{
+              
+              res.send(result); 
+            }
+          }
+        });
+      }
+}
 
 //testing new slack integration
 
@@ -660,15 +691,15 @@ app.post('/uploadQuillPic', function (request, response) {
 //     jsonBody =req.body;
 //     mongo.writeToMongo(jsonBody, function(result,err) { 
 //       if (err){
-//         console.log(err);
+//         
 //         res.end("Unexpected Error from Db");
 //       }
 //       else if (!result.insertedId){
 //         res.end("Unexpected Error from Db - no inserted ID");
 //       }
 //       else{
-//         console.log(result);
-//         console.log(result.insertedId);
+//         
+//         
 //         res.send(result.insertedId); 
 //       }
 //     });
@@ -688,11 +719,11 @@ app.post('/uploadQuillPic', function (request, response) {
 //     mongoId = req.headers.id;
 //     mongo.updateMongo(jsonBody, mongoId, function(result,err) { 
 //       if (err){
-//         console.log(err);
+//         
 //         res.end("Unexpected Error from Db");
 //       }
 //       else {
-//         console.log(result);
+//         
 //         res.send(result);
 //       } 
 //     });
@@ -708,11 +739,11 @@ app.post('/uploadQuillPic', function (request, response) {
 //     mongoId = req.headers.id;
 //     mongo.deleteFromMongo(mongoId, function(result,err) { 
 //       if (err){
-//         console.log(err);
+//         
 //         res.end("Unexpected Error from Db");
 //       }
 //       else {
-//         console.log(result);
+//         
 //         res.send(result); 
 //       }
 //     });

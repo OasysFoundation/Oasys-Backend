@@ -10,7 +10,7 @@ const user = encodeURIComponent(process.env.USER_ID);
 const password = encodeURIComponent(process.env.PASSWORD);
 const authMechanism = 'DEFAULT';
 const url = f('mongodb://%s:%s@localhost:27017/oasysTest?authMechanism=%s',
-    user, password, authMechanism);
+    user, password, authMechanism); //,
 
 var exports = module.exports = {};
 'use strict';
@@ -109,7 +109,7 @@ exports.SET = SET;
 // Write to "contents" db
 function query(collectionName, operation, ...params) { //add option to pass callback directly
     return new Promise(function (resolve, reject) {
-        MongoClient.connect(url)
+        MongoClient.connect(url, {useNewUrlParser: true})
             .then(client => {
                 const db = client.db()
                 const collection = db.collection(collectionName);

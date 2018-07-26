@@ -51,12 +51,12 @@ Loads picture, title, description, tags, and url from "contents" db with publish
 
 
 const gatherRatings = async function(data){
-    const ratings = data.map(async function(result){
+    const allRatingsAsync = data.map(async function(result){
         const {userId, contentId} = result;
         console.log("DATA", data);
         return await getRating(userId, contentId)
     });
-    const allRatings = await Promise.all(ratings);
+    const allRatings = await Promise.all(allRatingsAsync);
     return allRatings
 };
 

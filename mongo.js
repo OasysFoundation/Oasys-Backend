@@ -24,14 +24,16 @@ const SET = {
             "userId": userId
         }, {$set: {"picture": newUrl}}, {"upsert": true})
     },
-    username(userId, username, callback) {
-        query('users', 'find', {'NAME': username})
-            .then(result => {
-                result.length
-                    ? callback()
-                    : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
-                        .then(callback)
-            })
+    username(userId, username) {
+        return new Promise(function (resolve, reject) {
+            query('users', 'find', {'NAME': username})
+                .then(result => {
+                    result.length
+                        ? reject('username or Id exists already!')
+                        : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
+                            .then(resolve)
+                })
+        })
     },
     rating: (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
         contentId,
@@ -53,35 +55,38 @@ const SET = {
         }, {"upsert": true})
     },
     //2 levels of DB query. Fire callback after second request is successful//if there is no analytics for that content and user and starttime it makes one, else => update
-    analyticsData(data, callback) {
-        console.log('Write Analytics data input: ', data);
-        const {
-            startTime, endTime, contentId,
-            contentUserId, accessUserId, accessTimes
-        } = data;
+    analyticsData(data) {
+        return new Promise(function (resolve, reject) {
+            console.log('Write Analytics data input: ', data);
+            const {
+                startTime, endTime, contentId,
+                contentUserId, accessUserId, accessTimes
+            } = data;
 
-        query('analytics', 'find', {startTime, contentId, contentUserId})
-            .then(result => {
-                result.length
-                    ? query('analytics', 'update', {contentId, startTime, contentUserId},
-                    {$set: {endTime, accessTimes}},
-                    {"upsert": false})
-                        .then(res => callback(res))
+            query('analytics', 'find', {startTime, contentId, contentUserId})
+                .then(result => {
+                    result.length
+                        ? query('analytics', 'update', {contentId, startTime, contentUserId},
+                        {$set: {endTime, accessTimes}},
+                        {"upsert": false})
+                            .then(res => resolve(res))
 
-                    : query('analytics', 'insertOne', {
-                        startTime,
-                        endTime,
-                        contentId,
-                        contentUserId,
-                        accessUserId,
-                        accessTimes
-                    })
-                        .then(res => callback(res))
-            })
-            .catch(err => {
-                console.log("didn't find analytics @ save analytics");
-                throw err
-            })
+                        : query('analytics', 'insertOne', {
+                            startTime,
+                            endTime,
+                            contentId,
+                            contentUserId,
+                            accessUserId,
+                            accessTimes
+                        })
+                            .then(res => resolve(res))
+                })
+                .catch(err => {
+                    console.log("didn't find analytics @ save analytics");
+                    reject(err)
+                    throw err
+                })
+        })
     }
 }
 

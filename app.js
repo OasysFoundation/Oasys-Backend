@@ -49,9 +49,8 @@ app.get('/', (req, res) => {
 Loads picture, title, description, tags, and url from "contents" db with published flag
 */
 
-
-const gatherRatings = async function(data){
-    const allRatingsAsync = data.map(async function(result){
+const gatherRatings = async function (data) {
+    const allRatingsAsync = data.map(async function (result) {
         const {userId, contentId} = result;
         console.log("DATA", data);
         return await getRating(userId, contentId)
@@ -70,7 +69,9 @@ app.get('/GetContentsPreview', function (req, res) {
                         .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
                     res.json(results)
                 })
-                .catch(err => {throw err})
+                .catch(err => {
+                    throw err
+                })
         })
 });
 
@@ -78,14 +79,8 @@ app.get('/GetContentsPreview', function (req, res) {
 app.get('/user/:userId/:contentId', function (req, res) {
     const {userId, contentId} = req.params;
     mongo.GET.content(userId, contentId)
-        .then(result => {
-            console.log(`Read content from Mongo`)
-            return res.json(result)
-        })
-        .catch(err => {
-            console.info(err)
-            res.end("Unexpected Error from Db")
-        });
+        .then(res => res.json(res))
+        .catch(err => res.end('Couldnt get average rating'));
 });
 
 
@@ -93,38 +88,21 @@ app.get('/user/:userId/:contentId', function (req, res) {
 Loads avg rating of content from "ratings" db
 */
 app.get('avgRating/:userId/:contentId', function (req, res) {
-
-    userId = req.params.userId;
-    contentId = req.params.contentId;
-
-
-    getRating(userId, contentId, "", function (response, err) {
-        console.log(response);
-        res.json(response[0]);
-    })
-
+    const {userId, contentId} = req.params;
+    getRating(userId, contentId)
+        .then(result => res.json(result))
+        .catch(err => res.end('Couldnt get average rating'));
 });
-
 /*
 Write rating for content into "ratings" db
 */
 app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
-
-    userId = req.params.userId;
-    contentId = req.params.contentId;
-    rating = req.params.rating;
-    accessUser = req.params.accessUser;
-
-    console.log("Test 1");
-
-    mongo.WriteRatingToMongo(userId, contentId, rating, accessUser)
-        .then(result => {
-            console.log(`Write rating to mongo`)
-            return res.json(result)
-        })
+    const {userId, contentId, rating, accessUser} = req.params;
+    mongo.SET.rating(userId, contentId, rating, accessUser)
+        .then(result => res.json(result))
         .catch(err => {
-            console.info(err)
-            res.end("Unexpected Error from Db")
+            res.end('Couldnt get average rating');
+            throw err
         });
 });
 
@@ -132,72 +110,37 @@ app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
 Upload Unique Username into "users" db
 */
 app.post('/newUsername/:userId/:username/', function (req, res) {
-
-    userId = req.params.userId;
-    username = req.params.username;
-
-    mongo.uploadUsername(userId, username, function (result, err) {
-        if (err) {
-            console.log(err);
-            res.end("Unexpected Error from Db");
-        }
-
-        else if (!result) {
-            res.json({"userNameExists": true});
-        }
-        else {
-            res.json({"userNameExists": false})
-        }
-    });
-
+    const {userId, username} = req.params;
+    mongo.SET.username(userId, username)
+        .then(result => res.json(result))
+        .catch(err => {
+            res.end(`Couldnt set username ::: ${err}`);
+            throw err
+        });
 });
 
 /*
 Write data into to “contents” db
 */
 app.post('/save/:userId/:contentId', function (req, res) {
-
-    userId = req.params.userId;
-    contentId = req.params.contentId;
-
-    if (!req.body) {
+    const {userId, contentId} = req.params;
+    const data = req.body
+    const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
+    if (!data || isEmpty) {
         res.end("Error: Request body is empty.");
+        return
     }
-    else if (req.body.published == 1) {
-        if (!req.body.title || !req.body.description || !req.body.tags) {
-            console.log("NOSIRE");
-            res.end("You cannot publish unless you provide the picture url, title, description, and tags");
-        }
-        else {
-            jsonBody = req.body;
-            mongo.writeContentToMongo("publish", jsonBody, userId, contentId, function (result, err) {
-                if (err) {
-                    console.log(err);
-                    res.end("Unexpected Error from Db");
-                }
-                else {
-                    console.log(result);
-                    res.send(result);
-                }
-            });
-        }
-
+    else if (data.published === 1 && (!data.title || !data.description || !data.tags)) {
+        res.end("You cannot publish unless you provide the picture url, title, description, and tags");
+        return;
     }
-    else {
-        console.log("STEP 4: NOT EXPECTED");
-        jsonBody = req.body;
-        mongo.writeContentToMongo("save", jsonBody, userId, contentId, function (result, err) {
-            if (err) {
-                console.log(err);
-                res.end("Unexpected Error from Db");
-            }
-            else {
-                console.log(result);
-                res.send(result);
-            }
+    const pubOrSave = req.body.published ? 'publish' : 'save'
+    mongo.SET.contentPost(pubOrSave, data, userId, contentId)
+        .then(result => res.json(result))
+        .catch(err => {
+            res.end(`Couldnt post content ::: ${err}`);
+            throw err
         });
-    }
-
 });
 
 /*
@@ -208,7 +151,7 @@ function getRating(userId, contentId, extra = "noExtra") {
         mongo.GET.ratingsForContent(userId, contentId)
             .then(result => {
                 const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
-                const average = result.length ? sum /result.length : 1.5
+                const average = result.length ? sum / result.length : 1.5
                 resolve(average);
                 //callback([average, extra, result.length])
             })
@@ -224,13 +167,12 @@ Upload profile picture to "users" db
 */
 app.post('/uploadProfilePic/:userId', function (request, response) {
 
-    userId = request.params.userId;
+    const userId = request.params.userId;
     const files = request.files; // file passed from client
     const meta = request.data; // all other values passed from the client, like name, etc..
 
     console.log(files);
     console.log(meta);
-
 
     upload(request, response, function (error, success) {
         if (error) {
@@ -242,14 +184,13 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
 
         var newUrl = request.files[0].location;
 
-        mongo.uploadProfilePicture(userId, newUrl)
+        mongo.SET.profilePicture(userId, newUrl)
             .then(result => {
                 console.log(`PROFILE picture uploaded!! `)
                 return res.json(result)
             })
             .catch(err => {
-                console.info(err)
-                res.end("Unexpected Error from Db")
+                res.end(`Unexpected Error when uploading profile Pic ::: ${err}`)
             });
     });
 });
@@ -258,9 +199,7 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
 Upload picture to "contents" db for cover photo
 */
 app.post('/uploadTitle/:userId/:contentId', function (request, response) {
-
-    userId = request.params.userId;
-    contentId = request.params.contentId;
+    const {userId, contentId} = req.params;
 
     upload(request, response, function (error, success) {
         if (error) {
@@ -270,17 +209,17 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
         console.log(request.files)
         console.log('File uploaded successfully.');
 
-        var newUrl = request.files[0].location;
+        const newUrl = request.files[0].location;
         console.log('newURL here:  ', newUrl);
 
-        mongo.uploadTitlePicture(userId, contentId, newUrl)
+        mongo.SET.titlePicture(userId, contentId, newUrl)
             .then(result => {
                 console.log(`Title picture uploaded!! `)
                 return res.json(result)
             })
             .catch(err => {
                 console.info(err)
-                res.end("Unexpected Error from Db")
+                res.end(`Problem when uploading TITLE Pic ::: ${err}`)
             });
     });
 });
@@ -291,15 +230,13 @@ Get all information from "users" db
 */
 app.get('/profile/:userId', function (request, response) {
 
-    userId = request.params.userId;
-    mongo.getProfile(userId).then(result => {
-        console.log(`got profile info! `)
-        return res.json(result)
-    })
-        .catch(err => {
-            console.info(err)
-            res.end("Unexpected Error from Db")
-        });
+    const userId = request.params.userId;
+    mongo.GET.profile(userId)
+        .then(result => {
+            console.log(`got profile info! `)
+            return res.json(result)
+        })
+        .catch(err => res.end("Unexpected Error from Db " + err));
 });
 
 /*
@@ -307,31 +244,26 @@ Write data into to "analytics" db
 */
 
 app.post('/saveUserContentAccess', function (req, res) {
-
-    if (!req.body) {
+    const jsonBody = req.body;
+    const isEmpty = Object.keys(jsonBody).length === 0 && data.constructor === Object;
+    if (!jsonBody || isEmpty) {
         res.end("Error: Request body is empty.");
     }
     else {
-        jsonBody = req.body;
-        mongo.writeAnalyticsDataToMongo(jsonBody, function (result, err) {
-            if (err) {
-                console.log(err);
-                res.end("Unexpected Error from Db");
-            }
-            else {
-                console.log(result);
-                res.send(result);
-            }
-        });
+        mongo.SET.analyticsData(jsonBody)
+            .then(result => {
+            console.log(`Title picture uploaded!! `)
+            return res.json(result)
+        })
+            .catch(err => res.end(`Problem when uploading TITLE Pic ::: ${err}`))
     }
-
 });
 
 /*
 Get Analytics data for content from "analytics" db
 */
 app.get('/getAllContentsForUser/:userId/', function (req, res) {
-    userId = req.params.userId;
+    const userId = req.params.userId;
     mongo.readAnalyticsFromUsersMongo(userId)
         .then(result => res.json(result))
         .catch(err => {

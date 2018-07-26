@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="14eb7110-a206-4a81-8d14-2d2b18330f4b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mongo.js" beforeDir="false" afterPath="$PROJECT_DIR$/mongo.js" afterDir="false" />
     </list>
@@ -18,11 +17,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="app.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="app.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="645">
-              <caret line="62" column="28" selection-start-line="62" selection-start-column="10" selection-end-line="62" selection-end-column="28" />
+            <state relative-caret-position="291">
+              <caret line="116" column="53" selection-start-line="116" selection-start-column="53" selection-end-line="116" selection-end-column="53" />
               <folding>
                 <element signature="e#436#468#0" />
                 <element signature="e#494#765#0" />
@@ -31,6 +30,15 @@
                 <element signature="e#867#1003#0" />
                 <element signature="e#1143#1275#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="codeExamples.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../frontend/src/codeExamples.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="311">
+              <caret line="25" column="26" selection-start-line="25" selection-start-column="26" selection-end-line="25" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -44,11 +52,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mongo.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mongo.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mongo.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="257">
-              <caret line="114" column="39" selection-start-line="114" selection-start-column="39" selection-end-line="114" selection-end-column="39" />
+            <state relative-caret-position="212">
+              <caret line="114" column="84" selection-start-line="114" selection-start-column="76" selection-end-line="114" selection-end-column="84" />
             </state>
           </provider>
         </entry>
@@ -66,8 +74,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>savecomment</find>
-      <find>read</find>
       <find>readuserpreview</find>
       <find>getuserpreview</find>
       <find>readpreview</find>
@@ -87,10 +93,17 @@
       <find>preview</find>
       <find>getuserpreivew</find>
       <find>ratingsforcontent</find>
-      <find>getrating</find>
       <find>getcontent</find>
       <find>contentsprev</find>
       <find>GetContentsPreview</find>
+      <find>mongoclient</find>
+      <find>getrating</find>
+      <find>await</find>
+      <find>contentpost</find>
+      <find>anal</find>
+      <find>upload</find>
+      <find>callback</find>
+      <find>username</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -100,10 +113,10 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/utils.js" />
-        <option value="$PROJECT_DIR$/../frontend/src/codeExamples.js" />
         <option value="$PROJECT_DIR$/../asyncTest.html" />
-        <option value="$PROJECT_DIR$/app.js" />
+        <option value="$PROJECT_DIR$/../frontend/src/codeExamples.js" />
         <option value="$PROJECT_DIR$/mongo.js" />
+        <option value="$PROJECT_DIR$/app.js" />
       </list>
     </option>
   </component>
@@ -178,12 +191,12 @@
       <option name="presentableId" value="Default" />
       <updated>1532540032053</updated>
       <workItem from="1532540035694" duration="11354000" />
-      <workItem from="1532585342671" duration="740000" />
+      <workItem from="1532585342671" duration="4690000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="12094000" />
+    <option name="totallyTimeSpent" value="16044000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="797" extended-state="6" />
@@ -252,10 +265,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/utils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/../frontend/src/codeExamples.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="33" column="1" selection-start-line="33" selection-end-line="33" selection-end-column="1" />
+        <state relative-caret-position="311">
+          <caret line="25" column="26" selection-start-line="25" selection-start-column="26" selection-end-line="25" selection-end-column="26" />
         </state>
       </provider>
     </entry>
@@ -266,17 +286,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils.js">
+    <entry file="file://$PROJECT_DIR$/mongo.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="9" column="33" selection-start-line="9" selection-start-column="33" selection-end-line="9" selection-end-column="33" />
+        <state relative-caret-position="212">
+          <caret line="114" column="84" selection-start-line="114" selection-start-column="76" selection-end-line="114" selection-end-column="84" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="62" column="28" selection-start-line="62" selection-start-column="10" selection-end-line="62" selection-end-column="28" />
+        <state relative-caret-position="291">
+          <caret line="116" column="53" selection-start-line="116" selection-start-column="53" selection-end-line="116" selection-end-column="53" />
           <folding>
             <element signature="e#436#468#0" />
             <element signature="e#494#765#0" />
@@ -285,13 +305,6 @@
             <element signature="e#867#1003#0" />
             <element signature="e#1143#1275#0" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mongo.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="257">
-          <caret line="114" column="39" selection-start-line="114" selection-start-column="39" selection-end-line="114" selection-end-column="39" />
         </state>
       </provider>
     </entry>

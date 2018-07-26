@@ -49,16 +49,6 @@ app.get('/', (req, res) => {
 Loads picture, title, description, tags, and url from "contents" db with published flag
 */
 
-const gatherRatings = async function (data) {
-    const allRatingsAsync = data.map(async function (result) {
-        const {userId, contentId} = result;
-        console.log("DATA", data);
-        return await getRating(userId, contentId)
-    });
-    const allRatings = await Promise.all(allRatingsAsync);
-    return allRatings
-};
-
 app.get('/GetContentsPreview', function (req, res) {
     mongo.GET.contentsPreview()
         .then(results => {
@@ -144,25 +134,6 @@ app.post('/save/:userId/:contentId', function (req, res) {
 });
 
 /*
-Helper function for calculating rating avg
-*/
-function getRating(userId, contentId, extra = "noExtra") {
-    return new Promise(function (resolve, reject) {
-        mongo.GET.ratingsForContent(userId, contentId)
-            .then(result => {
-                const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
-                const average = result.length ? sum / result.length : 1.5
-                resolve(average);
-                //callback([average, extra, result.length])
-            })
-            .catch(err => {
-                reject(err)
-                throw err;
-            })
-    })
-}
-
-/*
 Upload profile picture to "users" db
 */
 app.post('/uploadProfilePic/:userId', function (request, response) {
@@ -224,12 +195,10 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
     });
 });
 
-
 /*
 Get all information from "users" db
 */
 app.get('/profile/:userId', function (request, response) {
-
     const userId = request.params.userId;
     mongo.GET.profile(userId)
         .then(result => {
@@ -264,11 +233,11 @@ Get Analytics data for content from "analytics" db
 */
 app.get('/getAllContentsForUser/:userId/', function (req, res) {
     const userId = req.params.userId;
-    mongo.readAnalyticsFromUsersMongo(userId)
+    mongo.GET.analyticsFromUsers(userId)
         .then(result => res.json(result))
         .catch(err => {
             console.info(err)
-            res.end("Unexpected Error from Db")
+            res.end(`Problem when getting analytics for user ::: ${err}`)
         });
 });
 
@@ -276,32 +245,24 @@ app.get('/getAllContentsForUser/:userId/', function (req, res) {
 Get Analytics data for content CREATOR from "analytics" db
 */
 app.get('/getAllContentsForCreator/:userId/', function (req, res) {
-
-    userId = req.params.userId;
-
-    mongo.readAnalyticsFromCreatorMongo(userId)
+    const userId = req.params.userId;
+    mongo.GET.analyticsFromCreator(userId)
         .then(result => res.json(result))
         .catch(err => {
             console.info(err)
-            res.end("Unexpected Error from Db")
+            res.end(`Problem when getting analytics for CREATOR ::: ${err}`)
         });
 });
 
 
 app.get('/getContentInfo/:userId/:contentId', function (req, res) {
-
-    userId = req.params.userId;
-    contentId = req.params.contentId;
-
-    mongo.readAnalyticsFromContentsMongo(userId, contentId)
-        .then(result => {
-            console.log(res.json, "TYPE :", typeof res.json);
-            return res.json(result)
-        })
+    const {userId, contentId} = req.params.userId;
+    mongo.GET.analyticsFromContent(userId, contentId)
+        .then(result => res.json(result))
         .catch(err => {
             console.info(err)
-            res.end("Unexpected Error from Db")
-        })
+            res.end(`Problem getting analytics for Content ::: ${err}`)
+        });
 });
 
 
@@ -315,12 +276,10 @@ app.get('/getAllRatings/:userId', function (req, res) {
         })
 })
 
-
 /*
 Upload picture from quill to db
 */
 app.post('/uploadQuillPic', function (request, response) {
-
     upload(request, response, function (error, success) {
         if (error) {
             console.log(error);
@@ -329,13 +288,38 @@ app.post('/uploadQuillPic', function (request, response) {
         console.log(request.files)
         console.log('File uploaded successfully.');
 
-        var newUrl = request.files[0].location;
+        const newUrl = request.files[0].location;
         console.log(newUrl);
         response.json(newUrl);
     });
 });
 
-//
+/*
+Helper function for calculating rating avg
+*/
+function getRating(userId, contentId, extra = "noExtra") {
+    return new Promise(function (resolve, reject) {
+        mongo.GET.ratingsForContent(userId, contentId)
+            .then(result => {
+                const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
+                const average = result.length ? sum / result.length : 1.5
+                resolve(average);
+            })
+            .catch(err => {
+                reject(err)
+                throw err;
+            })
+    })
+}
 
+const gatherRatings = async function (data) {
+    const allRatingsAsync = data.map(async function (result) {
+        const {userId, contentId} = result;
+        console.log("DATA", data);
+        return await getRating(userId, contentId)
+    });
+    const allRatings = await Promise.all(allRatingsAsync);
+    return allRatings
+};
 
 app.listen(8080, () => console.log('Listening on port 8080'))

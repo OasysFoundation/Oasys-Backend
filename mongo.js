@@ -105,7 +105,7 @@ const GET = {
         'contentId': contentId,
         "contentUserId": userId
     }),
-    analyticsFromUsers: (userId, contentId) => query('analytics', 'find', {'accessUserId': userId}),
+    analyticsFromUsers: (userId) => query('analytics', 'find', {'accessUserId': userId}),
 }
 
 exports.GET = GET;

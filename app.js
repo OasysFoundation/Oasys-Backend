@@ -65,14 +65,12 @@ app.get('/GetContentsPreview', function (req, res) {
         })
 });
 
-
 app.get('/user/:userId/:contentId', function (req, res) {
     const {userId, contentId} = req.params;
     mongo.GET.content(userId, contentId)
-        .then(res => res.json(res))
-        .catch(err => res.end('Couldnt get average rating'));
+        .then(result => {res.json(result)})
+        .catch(err => res.end(`Couldnt get content  + ${err}`));
 });
-
 
 /*
 Loads avg rating of content from "ratings" db
@@ -170,7 +168,7 @@ app.post('/uploadProfilePic/:userId', function (request, response) {
 Upload picture to "contents" db for cover photo
 */
 app.post('/uploadTitle/:userId/:contentId', function (request, response) {
-    const {userId, contentId} = req.params;
+    const {userId, contentId} = request.params;
 
     upload(request, response, function (error, success) {
         if (error) {
@@ -198,8 +196,8 @@ app.post('/uploadTitle/:userId/:contentId', function (request, response) {
 /*
 Get all information from "users" db
 */
-app.get('/profile/:userId', function (request, response) {
-    const userId = request.params.userId;
+app.get('/profile/:userId', function (req, res) {
+    const userId = req.params.userId;
     mongo.GET.profile(userId)
         .then(result => {
             console.log(`got profile info! `)
@@ -211,6 +209,7 @@ app.get('/profile/:userId', function (request, response) {
 /*
 Write data into to "analytics" db
 */
+
 
 app.post('/saveUserContentAccess', function (req, res) {
     const jsonBody = req.body;

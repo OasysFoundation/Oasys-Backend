@@ -94,6 +94,20 @@ app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
         });
 });
 
+/*
+Write Comment for content into "comments" db
+*/
+app.post('/comment/:userId/:contentId', function (req, res) {
+    const {userId, contentId} = req.params;
+    const data = req.body;
+    mongo.SET.comment(userId, contentId, data)
+        .then(result => res.json(result))
+        .catch(err => {
+            res.end('error posting comment');
+            throw err
+        });
+});
+
 /* 
 Upload Unique Username into "users" db
 */
@@ -220,7 +234,6 @@ app.post('/saveUserContentAccess', function (req, res) {
     else {
         mongo.SET.analyticsData(jsonBody)
             .then(result => {
-            console.log(`Title picture uploaded!! `)
             return res.json(result)
         })
             .catch(err => res.end(`Problem when uploading TITLE Pic ::: ${err}`))
@@ -269,6 +282,16 @@ app.get('/getAllRatings/:userId', function (req, res) {
     const {userId} = req.params.userId;
     mongo.GET.allRatings(userId)
         .then(ratings => res.json(ratings))
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        })
+})
+
+app.get('/comment/:userId/:contentId/:slideNumber', function (req, res) {
+    const {userId, contentId, slideNumber} = req.params;
+    mongo.GET.comments(userId, contentId, slideNumber)
+        .then(comments => res.json(comments))
         .catch(err => {
             console.info(err)
             res.end("Unexpected Error from Db")

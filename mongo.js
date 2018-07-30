@@ -41,6 +41,18 @@ const SET = {
         rating: parseInt(rating),
         accessUser
     }),
+    comment(userId, contentId, data){
+        const {time, comment, parent, slideNumber, accessUser} = data
+        return query('comments', 'insertOne', {
+            contentId,
+            userId,
+            accessUser,
+            time,
+            comment,
+            parent,
+            slideNumber,
+        })
+    },
     contentPost(status, data, userId, contentId) {
         const published = status === 'save' ? 0 : 1;
         const newData = data.data;
@@ -60,24 +72,32 @@ const SET = {
             console.log('Write Analytics data input: ', data);
             const {
                 startTime, endTime, contentId,
-                contentUserId, accessUserId, accessTimes
+                contentUserId, accessUserId, accessTimes,
+                updateType, quizzes
             } = data;
 
             query('analytics', 'find', {startTime, contentId, contentUserId})
                 .then(result => {
                     result.length
-                        ? query('analytics', 'update', {contentId, startTime, contentUserId},
-                        {$set: {endTime, accessTimes}},
-                        {"upsert": false})
-                            .then(res => resolve(res))
-
+                        // right now updateType is only set on quizzes post request. 
+                        // eventually we should always include the updateType on analytics post requests
+                        ? updateType && updateType==="quizUpdate"
+                            ? query('analytics', 'update', {contentId, startTime, contentUserId},
+                                {$set: {endTime, quizzes}},
+                                {"upsert": false})
+                                   .then(res => resolve(res))
+                            : query('analytics', 'update', {contentId, startTime, contentUserId},
+                                {$set: {endTime, accessTimes}},
+                                {"upsert": false})
+                                   .then(res => resolve(res))
                         : query('analytics', 'insertOne', {
                             startTime,
                             endTime,
                             contentId,
                             contentUserId,
                             accessUserId,
-                            accessTimes
+                            accessTimes,
+                            quizzes
                         })
                             .then(res => resolve(res))
                 })
@@ -93,6 +113,9 @@ const SET = {
 const GET = {
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
     ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
+
+    comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),
+    
 
     profile: (userId) => query('users', 'find', {'UID': userId}),
 

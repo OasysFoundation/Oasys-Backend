@@ -29,9 +29,9 @@ const SET = {
             query('users', 'find', {'NAME': username})
                 .then(result => {
                     result.length
-                        ? reject('username or Id exists already!')
+                        ? resolve({"userNameExists":true})
                         : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
-                            .then(resolve)
+                            .then(resolve({"userNameExists":false}))
                 })
         })
     },
@@ -128,6 +128,8 @@ const SET = {
 
 const GET = {
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
+    allComments: (userId) => query('comments', 'find', {userId: userId}),
+
     ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
 
     comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),

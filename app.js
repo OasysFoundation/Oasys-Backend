@@ -136,12 +136,15 @@ Upload Unique Username into "users" db
 */
 app.post('/newUsername/:userId/:username/', function (req, res) {
     const {userId, username} = req.params;
-    mongo.SET.username(userId, username)
+    username.indexOf('-') == -1
+    ? mongo.SET.username(userId, username)
         .then(result => res.json(result))
         .catch(err => {
             res.end(`Couldnt set username ::: ${err}`);
             throw err
-        });
+        })
+    : res.json({"hyphen":true})
+    
 });
 
 /*
@@ -304,7 +307,7 @@ app.get('/getAllContentsForCreator/:userId/', function (req, res) {
 
 
 app.get('/getContentInfo/:userId/:contentId', function (req, res) {
-    const {userId, contentId} = req.params.userId;
+    const {userId, contentId} = req.params;
     mongo.GET.analyticsFromContent(userId, contentId)
         .then(result => res.json(result))
         .catch(err => {
@@ -323,6 +326,19 @@ app.get('/getAllRatings/:userId', function (req, res) {
             res.end("Unexpected Error from Db")
         })
 })
+
+/*
+Get Analytics data for user from "analytics" db
+*/
+app.get('/getAllComments/:userId', function (req, res) {
+  const {userId} = req.params.userId;
+  mongo.GET.allComments(userId)
+        .then(comments => res.json(comments))
+        .catch(err => {
+            console.info(err)
+            res.end("Unexpected Error from Db")
+        })
+});
 
 app.get('/comment/:userId/:contentId/:slideNumber', function (req, res) {
     const {userId, contentId, slideNumber} = req.params;

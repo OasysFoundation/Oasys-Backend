@@ -65,6 +65,29 @@ app.get('/GetContentsPreview', function (req, res) {
         })
 });
 
+/*
+Loads picture, title, description, tags, and url from "contents" db with published flag
+*/
+
+app.get('/getUserContentsPreview/:userId', function (req, res) {
+    const {userId} = req.params;
+    console.log(userId);
+    mongo.GET.contentsPreviewUserPage(userId)
+        .then(results => {
+            console.log(results)
+;            gatherRatings(results)
+                .then(ratings => {
+                    //merge the average rating into the original results
+                    results
+                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    res.json(results)
+                })
+                .catch(err => {
+                    throw err
+                })
+        })
+});
+
 app.get('/user/:userId/:contentId', function (req, res) {
     const {userId, contentId} = req.params;
     mongo.GET.content(userId, contentId)
@@ -323,8 +346,11 @@ function getRating(userId, contentId, extra = "noExtra") {
     return new Promise(function (resolve, reject) {
         mongo.GET.ratingsForContent(userId, contentId)
             .then(result => {
-                const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
-                const average = result.length ? sum / result.length : 1.5
+                var average = 0;
+                if(result.length){
+                    const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
+                    average = result.length ? sum / result.length : 1.5
+                }
                 resolve(average);
             })
             .catch(err => {

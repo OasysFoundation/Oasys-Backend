@@ -54,17 +54,28 @@ const SET = {
         })
     },
     contentPost(status, data, userId, contentId) {
-        const published = status === 'save' ? 0 : 1;
-        const newData = data.data;
-        newData.forEach(d => d.thumb = 'null');// !?!? why a string
-        const {title, description, tags} = data;
-        console.log('Save || publish Content :', contentId, userId, newData, title, description, published);
+        return new Promise(function (resolve, reject) {
+            const published = status === 'save' ? 0 : 1;
+            const newData = data.data;
+            newData.forEach(d => d.thumb = 'null');// !?!? why a string
+            const {title, description, tags} = data;
+            console.log('Save || publish Content :', contentId, userId, newData, title, description, published);
 
-        return query('contents', 'update', {"contentId": contentId, "userId": userId}, {
-            $set: {
-                "data": newData, title, description, published, tags
-            }
-        }, {"upsert": true})
+            query('contents', 'find', {'contentId': contentId, 'userId':userId, 'published':1})
+                .then(result => {
+                    result.length
+                        ? resolve({"alreadyPublished": true})
+                        : query('contents', 'update', {"contentId": contentId, "userId": userId}, 
+                                { $set: {"data": newData, title, description, published, tags}},
+                                {"upsert": true})
+                                    .then(res => resolve(res))
+                })
+                .catch(err => {
+                    console.log("didn't find content @ post content");
+                    reject(err)
+                    throw err
+                })
+        })
     },
     //2 levels of DB query. Fire callback after second request is successful//if there is no analytics for that content and user and starttime it makes one, else => update
     analyticsData(data) {

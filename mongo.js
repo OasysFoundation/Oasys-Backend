@@ -35,6 +35,11 @@ const SET = {
                 })
         })
     },
+    wallet(userId, walletId) {
+        return query('users', 'update', {
+            "UID": userId,
+        }, {$set: {"walletId": walletId}}, {"upsert": true})
+    },
     rating: (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
         contentId,
         userId,

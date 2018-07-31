@@ -145,6 +145,19 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
 });
 
 /*
+upload wallet id to "users" db
+*/
+app.post('/postWalletId/:userId/:walletId/', function (req, res) {
+    const {userId, walletId} = req.params;
+    mongo.SET.wallet(userId, walletId)
+        .then(result => res.json(result))
+        .catch(err => {
+            res.end(`Couldnt set walletId ::: ${err}`);
+            throw err
+        });
+ });
+
+/*
 Write data into to “contents” db
 */
 app.post('/save/:userId/:contentId', function (req, res) {

@@ -15,6 +15,7 @@ const url = f('mongodb://%s:%s@localhost:27017/oasysTest?authMechanism=%s',
 var exports = module.exports = {};
 'use strict';
 
+
 const SET = {
     profilePicture: (userId, newUrl) => query('users', 'update', {"UID": userId}, {$set: {"PIC": newUrl}}, {"upsert": true}),
 
@@ -119,6 +120,8 @@ function query(collectionName, operation, ...params) { //add option to pass call
                 const db = client.db()
                 const collection = db.collection(collectionName);
 
+                //collection.find === collection['find']
+
                 const mongoDBquery = operation === 'find'
                     //because find doesn't return a promise like update, insert and so on
                     ? () => collection[operation](...params).toArray()
@@ -126,11 +129,6 @@ function query(collectionName, operation, ...params) { //add option to pass call
 
                 mongoDBquery()
                     .then(data => {
-                        // console.log(data)
-                        // console.log(
-                        //     `**///////  DATA
-                        //  ::: @ Collection: ${collectionName}
-                        //  ::: @ Operation: ${operation}`)
                         resolve(data)
                         client.close();
                     })

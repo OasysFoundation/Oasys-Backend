@@ -9,6 +9,10 @@ const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
+
+
 // Set S3 endpoint to DigitalOcean Spaces
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
 const s3 = new aws.S3({
@@ -29,6 +33,12 @@ const upload = multer({
 }).array('upload', 1);
 
 const app = express()
+
+/*Initialize firebase auth*/
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://oasys-create.firebaseio.com'
+});
 
 //Middleware for CORS
 app.use(function (req, res, next) {
@@ -163,8 +173,8 @@ app.post('/postWalletId/:userId/:walletId/', function (req, res) {
 /*
 Write data into to “contents” db
 */
-app.post('/save/:userId/:contentId', function (req, res) {
-    const {userId, contentId} = req.params;
+app.post('/save/:userId/:contentId/:token', function (req, res) {
+    const {userId, contentId, token} = req.params;
     const data = req.body
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
     if (!data || isEmpty) {
@@ -177,13 +187,27 @@ app.post('/save/:userId/:contentId', function (req, res) {
     }
     const pubOrSave = req.body.published ? 'publish' : 'save'
 
+    //check if title contains hyphen
     contentId.indexOf('-') == -1
-    ? mongo.SET.contentPost(pubOrSave, data, userId, contentId)
-        .then(result => res.json(result))
-        .catch(err => {
-            res.end(`Couldnt post content ::: ${err}`);
-            throw err
-        })
+    //check if user is saving as anonymous
+    ? userId === "Anonymous"
+        ?  mongo.SET.contentPost(pubOrSave, data, userId, contentId)
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end(`Couldnt post content ::: ${err}`);
+                throw err
+            })
+        : verifyUser(userId,token).then(
+            mongo.SET.contentPost(pubOrSave, data, userId, contentId)
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end(`Couldnt post content ::: ${err}`);
+                throw err
+            })
+          ).catch(err => {
+                    res.end("User token expired. Please login again")
+                })
+
     : res.json({"hyphen":true})
     
 });
@@ -391,6 +415,18 @@ function getRating(userId, contentId, extra = "noExtra") {
                 throw err;
             })
     })
+}
+
+function verifyUser(userId, token){
+    return new Promise(function (resolve, reject) {
+        admin.auth().verifyIdToken(token)
+        .then(function(decodedToken) {
+          decodedToken.name==userId
+          ? resolve()
+          : reject()
+        
+        })
+    })    
 }
 
 const gatherRatings = async function (data) {

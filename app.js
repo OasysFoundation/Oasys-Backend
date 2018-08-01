@@ -176,12 +176,16 @@ app.post('/save/:userId/:contentId', function (req, res) {
         return;
     }
     const pubOrSave = req.body.published ? 'publish' : 'save'
-    mongo.SET.contentPost(pubOrSave, data, userId, contentId)
+
+    contentId.indexOf('-') == -1
+    ? mongo.SET.contentPost(pubOrSave, data, userId, contentId)
         .then(result => res.json(result))
         .catch(err => {
             res.end(`Couldnt post content ::: ${err}`);
             throw err
-        });
+        })
+    : res.json({"hyphen":true})
+    
 });
 
 /*

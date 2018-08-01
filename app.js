@@ -190,14 +190,7 @@ app.post('/save/:userId/:contentId/:token', function (req, res) {
     //check if title contains hyphen
     contentId.indexOf('-') == -1
     //check if user is saving as anonymous
-    ? userId === "Anonymous"
-        ?  mongo.SET.contentPost(pubOrSave, data, userId, contentId)
-            .then(result => res.json(result))
-            .catch(err => {
-                res.end(`Couldnt post content ::: ${err}`);
-                throw err
-            })
-        : verifyUser(userId,token).then(
+    ? verifyUser(userId,token).then(
             mongo.SET.contentPost(pubOrSave, data, userId, contentId)
             .then(result => res.json(result))
             .catch(err => {
@@ -207,7 +200,6 @@ app.post('/save/:userId/:contentId/:token', function (req, res) {
           ).catch(err => {
                     res.end("User token expired. Please login again")
                 })
-
     : res.json({"hyphen":true})
     
 });
@@ -419,13 +411,14 @@ function getRating(userId, contentId, extra = "noExtra") {
 
 function verifyUser(userId, token){
     return new Promise(function (resolve, reject) {
-        admin.auth().verifyIdToken(token)
-        .then(function(decodedToken) {
-          decodedToken.name==userId
-          ? resolve()
-          : reject()
-        
-        })
+        userId === "Anonymous"
+        ? resolve()
+        : admin.auth().verifyIdToken(token)
+            .then(function(decodedToken) {
+              decodedToken.name==userId
+              ? resolve()
+              : reject()      
+            })
     })    
 }
 

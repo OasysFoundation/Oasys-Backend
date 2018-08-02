@@ -12,7 +12,6 @@ const multerS3 = require('multer-s3');
 const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
 
-
 // Set S3 endpoint to DigitalOcean Spaces
 const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
 const s3 = new aws.S3({
@@ -117,42 +116,54 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
 /*
 Write rating for content into "ratings" db
 */
-app.post('/rate/:userId/:contentId/:rating/:accessUser', function (req, res) {
-    const {userId, contentId, rating, accessUser} = req.params;
-    mongo.SET.rating(userId, contentId, rating, accessUser)
+app.post('/rate/:uid/:userId/:contentId/:rating/:accessUser', function (req, res) {
+    const {userId, contentId, rating, accessUser, uid} = req.params;
+    const token = req.get("Authorization")
+
+    verifyUser(uid, accessUser, token).then(
+        mongo.SET.rating(userId, contentId, rating, accessUser)
         .then(result => res.json(result))
         .catch(err => {
             res.end('Couldnt get average rating');
             throw err
-        });
+        })
+    )
 });
 
 /*
 Write Comment for content into "comments" db
 */
-app.post('/comment/:userId/:contentId', function (req, res) {
-    const {userId, contentId} = req.params;
+app.post('/comment/:uid/:userId/:contentId', function (req, res) {
+    const {userId, contentId, uid} = req.params;
     const data = req.body;
-    mongo.SET.comment(userId, contentId, data)
+    const token = req.get("Authorization");
+    const accessUser = (data.accessUser || "Anonymous")
+
+    verifyUser(uid,accessUser,token).then(
+        mongo.SET.comment(userId, contentId, data)
         .then(result => res.json(result))
         .catch(err => {
             res.end('error posting comment');
             throw err
-        });
+        })
+    )
 });
 
 /* 
 Upload Unique Username into "users" db
 */
-app.post('/newUsername/:userId/:username/', function (req, res) {
-    const {userId, username} = req.params;
+app.post('/newUsername/:uid/:username/', function (req, res) {
+    const {username, uid} = req.params;
+    const token = req.get("Authorization");
     username.indexOf('-') == -1
-    ? mongo.SET.username(userId, username)
+    ? verifyUser(uid, username, token).then(
+        mongo.SET.username(uid, username)
         .then(result => res.json(result))
         .catch(err => {
             res.end(`Couldnt set username ::: ${err}`);
             throw err
         })
+      )
     : res.json({"hyphen":true})
     
 });
@@ -160,21 +171,25 @@ app.post('/newUsername/:userId/:username/', function (req, res) {
 /*
 upload wallet id to "users" db
 */
-app.post('/postWalletId/:userId/:walletId/', function (req, res) {
-    const {userId, walletId} = req.params;
-    mongo.SET.wallet(userId, walletId)
+app.post('/postWalletId/:uid/:userId/:walletId/', function (req, res) {
+    const {userId, walletId, uid} = req.params;
+    const token = req.get("Authorization");
+    verifyUser(uid,userId,token).then(
+        mongo.SET.wallet(userId, walletId)
         .then(result => res.json(result))
         .catch(err => {
             res.end(`Couldnt set walletId ::: ${err}`);
             throw err
-        });
+        })
+    )
  });
 
 /*
 Write data into to “contents” db
 */
-app.post('/save/:userId/:contentId/:token', function (req, res) {
-    const {userId, contentId, token} = req.params;
+app.post('/save/:uid/:userId/:contentId/', function (req, res) {
+    const {userId, contentId, uid} = req.params;
+    const token = req.get("Authorization");
     const data = req.body
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
     if (!data || isEmpty) {
@@ -190,7 +205,7 @@ app.post('/save/:userId/:contentId/:token', function (req, res) {
     //check if title contains hyphen
     contentId.indexOf('-') == -1
     //check if user is saving as anonymous
-    ? verifyUser(userId,token).then(
+    ? verifyUser(uid,userId,token).then(
             mongo.SET.contentPost(pubOrSave, data, userId, contentId)
             .then(result => res.json(result))
             .catch(err => {
@@ -207,63 +222,69 @@ app.post('/save/:userId/:contentId/:token', function (req, res) {
 /*
 Upload profile picture to "users" db
 */
-app.post('/uploadProfilePic/:userId', function (request, response) {
+app.post('/uploadProfilePic/:uid/', function (request, response) {
 
-    const userId = request.params.userId;
+    const {uid} = request.params;
+    const {token} = request.get("Authorization")
     const files = request.files; // file passed from client
     const meta = request.data; // all other values passed from the client, like name, etc..
 
     console.log(files);
     console.log(meta);
 
-    upload(request, response, function (error, success) {
-        if (error) {
-            console.log('uploadErr ', error);
-            response.end('error" : "Update failed", "status" : 404');
-        }
-        console.log(request.files)
-        console.log('File uploaded successfully.');
+    verifyUser(uid,"alwaysCheck",token).then(
+        upload(request, response, function (error, success) {
+            if (error) {
+                console.log('uploadErr ', error);
+                response.end('error" : "Update failed", "status" : 404');
+            }
+            console.log(request.files)
+            console.log('File uploaded successfully.');
 
-        var newUrl = request.files[0].location;
+            var newUrl = request.files[0].location;
 
-        mongo.SET.profilePicture(userId, newUrl)
-            .then(result => {
-                console.log(`PROFILE picture uploaded!! `)
-                return res.json(result)
-            })
-            .catch(err => {
-                res.end(`Unexpected Error when uploading profile Pic ::: ${err}`)
-            });
-    });
+            mongo.SET.profilePicture(uid, newUrl)
+                .then(result => {
+                    console.log(`PROFILE picture uploaded!! `)
+                    return response.json(result)
+                })
+                .catch(err => {
+                    response.end(`Unexpected Error when uploading profile Pic ::: ${err}`)
+                });
+        })
+    )
 });
 
 /*
 Upload picture to "contents" db for cover photo
 */
-app.post('/uploadTitle/:userId/:contentId', function (request, response) {
-    const {userId, contentId} = request.params;
+app.post('/uploadTitle/:uid/:userId/:contentId', function (request, response) {
+    const {userId, contentId, uid} = request.params;
+    const {token} = request.get("Authorization");
 
-    upload(request, response, function (error, success) {
-        if (error) {
-            console.log(error);
-            response.end('{"error" : "Update failed", "status" : 404}');
-        }
-        console.log(request.files)
-        console.log('File uploaded successfully.');
+    verifyUser(uid,userId,token).then(
+        upload(request, response, function (error, success) {
+            if (error) {
+                console.log(error);
+                response.end('{"error" : "Update failed", "status" : 404}');
+            }
+            console.log(request.files)
+            console.log('File uploaded successfully.');
 
-        const newUrl = request.files[0].location;
-        console.log('newURL here:  ', newUrl);
+            const newUrl = request.files[0].location;
+            console.log('newURL here:  ', newUrl);
 
-        mongo.SET.titlePicture(userId, contentId, newUrl)
-            .then(result => {
-                console.log(`Title picture uploaded!! `)
-                return res.json(result)
-            })
-            .catch(err => {
-                console.info(err)
-                res.end(`Problem when uploading TITLE Pic ::: ${err}`)
-            });
-    });
+            mongo.SET.titlePicture(userId, contentId, newUrl)
+                .then(result => {
+                    console.log(`Title picture uploaded!! `)
+                    return res.json(result)
+                })
+                .catch(err => {
+                    console.info(err)
+                    res.end(`Problem when uploading TITLE Pic ::: ${err}`)
+                });
+        })
+    )
 });
 
 /*
@@ -284,18 +305,23 @@ Write data into to "analytics" db
 */
 
 
-app.post('/saveUserContentAccess', function (req, res) {
+app.post('/saveUserContentAccess/:uid', function (req, res) {
+    const {uid} = req.params;
+    const token = req.get("Authorization");
     const jsonBody = req.body;
     const isEmpty = Object.keys(jsonBody).length === 0 && data.constructor === Object;
     if (!jsonBody || isEmpty) {
         res.end("Error: Request body is empty.");
     }
     else {
-        mongo.SET.analyticsData(jsonBody)
-            .then(result => {
-            return res.json(result)
-        })
-            .catch(err => res.end(`Problem when uploading TITLE Pic ::: ${err}`))
+        let username = (jsonBody.accessUserId || "Anonymous")
+        verifyUser(uid,username,token).then(
+            mongo.SET.analyticsData(jsonBody)
+                .then(result => {
+                return res.json(result)
+                })
+                .catch(err => res.end(`Problem when saving analytics ::: ${err}`))
+        )
     }
 });
 
@@ -338,7 +364,7 @@ app.get('/getContentInfo/:userId/:contentId', function (req, res) {
 
 
 app.get('/getAllRatings/:userId', function (req, res) {
-    const {userId} = req.params.userId;
+    const userId = req.params.userId;
     mongo.GET.allRatings(userId)
         .then(ratings => res.json(ratings))
         .catch(err => {
@@ -351,7 +377,7 @@ app.get('/getAllRatings/:userId', function (req, res) {
 Get Analytics data for user from "analytics" db
 */
 app.get('/getAllComments/:userId', function (req, res) {
-  const {userId} = req.params.userId;
+  const userId = req.params.userId;
   mongo.GET.allComments(userId)
         .then(comments => res.json(comments))
         .catch(err => {
@@ -371,9 +397,11 @@ app.get('/comment/:userId/:contentId/:slideNumber', function (req, res) {
 })
 
 /*
-Upload picture from quill to db
+Deprecated for IMGUR
 */
+/*
 app.post('/uploadQuillPic', function (request, response) {
+    const {token} = req.get("Authorization");
     upload(request, response, function (error, success) {
         if (error) {
             console.log(error);
@@ -387,7 +415,7 @@ app.post('/uploadQuillPic', function (request, response) {
         response.json(newUrl);
     });
 });
-
+*/
 /*
 Helper function for calculating rating avg
 */
@@ -409,13 +437,13 @@ function getRating(userId, contentId, extra = "noExtra") {
     })
 }
 
-function verifyUser(userId, token){
+function verifyUser(uid, username, token){
     return new Promise(function (resolve, reject) {
-        userId === "Anonymous"
+        username === "Anonymous"
         ? resolve()
         : admin.auth().verifyIdToken(token)
             .then(function(decodedToken) {
-              decodedToken.name==userId
+              decodedToken.uid==uid
               ? resolve()
               : reject()      
             })

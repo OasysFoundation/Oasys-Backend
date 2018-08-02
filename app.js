@@ -116,12 +116,14 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
 /*
 Write rating for content into "ratings" db
 */
-app.post('/rate/:uid/:userId/:contentId/:rating/:accessUser', function (req, res) {
-    const {userId, contentId, rating, accessUser, uid} = req.params;
+app.post('/rate/', function (req, res) {
+    const data = req.body; 
+    const {contentOwner, contentName, rating, userWhoRatesUID} = data;
+    const userWhoRates = (data.userWhoRates || "Anonymous")
     const token = req.get("Authorization")
 
-    verifyUser(uid, accessUser, token).then(
-        mongo.SET.rating(userId, contentId, rating, accessUser)
+    verifyUser(userWhoRatesUID, userWhoRates, token).then(
+        mongo.SET.rating(contentOwner, contentName, rating, userWhoRates)
         .then(result => res.json(result))
         .catch(err => {
             res.end('Couldnt get average rating');
@@ -133,14 +135,14 @@ app.post('/rate/:uid/:userId/:contentId/:rating/:accessUser', function (req, res
 /*
 Write Comment for content into "comments" db
 */
-app.post('/comment/:uid/:userId/:contentId', function (req, res) {
-    const {userId, contentId, uid} = req.params;
+app.post('/comment/', function (req, res) {
     const data = req.body;
-    const token = req.get("Authorization");
+    const {contentUserName, contentName, accessUserUID} = data;
     const accessUser = (data.accessUser || "Anonymous")
+    const token = req.get("Authorization");
 
-    verifyUser(uid,accessUser,token).then(
-        mongo.SET.comment(userId, contentId, data)
+    verifyUser(accessUserUID,accessUser,token).then(
+        mongo.SET.comment(contentUserName, contentName, data)
         .then(result => res.json(result))
         .catch(err => {
             res.end('error posting comment');
@@ -152,8 +154,9 @@ app.post('/comment/:uid/:userId/:contentId', function (req, res) {
 /* 
 Upload Unique Username into "users" db
 */
-app.post('/newUsername/:uid/:username/', function (req, res) {
-    const {username, uid} = req.params;
+app.post('/newUsername/', function (req, res) {
+    const data = req.body;
+    const {username, uid} = data;
     const token = req.get("Authorization");
     username.indexOf('-') == -1
     ? verifyUser(uid, username, token).then(
@@ -171,8 +174,9 @@ app.post('/newUsername/:uid/:username/', function (req, res) {
 /*
 upload wallet id to "users" db
 */
-app.post('/postWalletId/:uid/:userId/:walletId/', function (req, res) {
-    const {userId, walletId, uid} = req.params;
+app.post('/postWalletId/', function (req, res) {
+    const data = req.body;
+    const {userId, walletId, uid} = data;
     const token = req.get("Authorization");
     verifyUser(uid,userId,token).then(
         mongo.SET.wallet(userId, walletId)
@@ -187,17 +191,17 @@ app.post('/postWalletId/:uid/:userId/:walletId/', function (req, res) {
 /*
 Write data into to “contents” db
 */
-app.post('/save/:uid/:userId/:contentId/', function (req, res) {
-    const {userId, contentId, uid} = req.params;
+app.post('/save/', function (req, res) {
+    const data = req.body;
+    const {username, contentId, uid} = data;
     const token = req.get("Authorization");
-    const data = req.body
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
     if (!data || isEmpty) {
         res.end("Error: Request body is empty.");
         return
     }
-    else if (data.published === 1 && (!data.title || !data.description || !data.tags)) {
-        res.end("You cannot publish unless you provide the picture url, title, description, and tags");
+    else if ((!data.title || !data.description || !data.tags)) {
+        res.end("You cannot save unless you provide the picture url, title, description, and tags");
         return;
     }
     const pubOrSave = req.body.published ? 'publish' : 'save'
@@ -205,8 +209,8 @@ app.post('/save/:uid/:userId/:contentId/', function (req, res) {
     //check if title contains hyphen
     contentId.indexOf('-') == -1
     //check if user is saving as anonymous
-    ? verifyUser(uid,userId,token).then(
-            mongo.SET.contentPost(pubOrSave, data, userId, contentId)
+    ? verifyUser(uid,username,token).then(
+            mongo.SET.contentPost(pubOrSave, data, username, contentId)
             .then(result => res.json(result))
             .catch(err => {
                 res.end(`Couldnt post content ::: ${err}`);
@@ -305,10 +309,10 @@ Write data into to "analytics" db
 */
 
 
-app.post('/saveUserContentAccess/:uid', function (req, res) {
-    const {uid} = req.params;
-    const token = req.get("Authorization");
+app.post('/saveUserContentAccess', function (req, res) {
     const jsonBody = req.body;
+    const {uid} = jsonBody;
+    const token = req.get("Authorization");
     const isEmpty = Object.keys(jsonBody).length === 0 && data.constructor === Object;
     if (!jsonBody || isEmpty) {
         res.end("Error: Request body is empty.");

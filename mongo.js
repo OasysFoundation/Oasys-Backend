@@ -143,8 +143,8 @@ const GET = {
     profile: (userId) => query('users', 'find', {'UID': userId}),
 
     contentsPreview: () => query('contents', 'find', {published: 1, featured: true}),
-    contentsPreviewUserPage: (userId) => query('contents', 'find', {'userId': userId}),
-    contentsPreviewPublishedUserPage: (userId) => query('contents', 'find', {published: 1, 'userId': userId}),
+    contentsPreviewUserPage: (uid) => query('contents', 'find', {'uid': uid}),
+    contentsPreviewPublishedUserPage: (uid) => query('contents', 'find', {published: 1, 'uid': uid}),
     content: (userId, contentId) => query('contents', 'find', {'userId': userId, 'contentId': contentId}),
 
     //analytics

@@ -77,10 +77,10 @@ app.get('/GetContentsPreview', function (req, res) {
 /*
 Loads picture, title, description, tags, and url from "contents" db for personal user page
 */
-app.get('/getUserContentsPreview/:userId', function (req, res) {
-    const {userId} = req.params;
-    console.log(userId);
-    mongo.GET.contentsPreviewUserPage(userId)
+app.get('/getUserContentsPreview/:uid', function (req, res) {
+    const {uid} = req.params;
+    console.log(uid);
+    mongo.GET.contentsPreviewUserPage(uid)
         .then(results => {
             console.log(results)
 ;            gatherRatings(results)
@@ -99,10 +99,10 @@ app.get('/getUserContentsPreview/:userId', function (req, res) {
 /*
 Loads picture, title, description, tags, and url from "contents" db for public user page
 */
-app.get('/contentsPreviewPublishedUserPage/:userId', function (req, res) {
-    const {userId} = req.params;
-    console.log(userId);
-    mongo.GET.contentsPreviewPublishedUserPage(userId)
+app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
+    const {uid} = req.params;
+    console.log(uid);
+    mongo.GET.contentsPreviewPublishedUserPage(uid)
         .then(results => {
             console.log(results)
 ;            gatherRatings(results)

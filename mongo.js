@@ -26,13 +26,8 @@ const SET = {
     },
     username(userId, username) {
         return new Promise(function (resolve, reject) {
-            query('users', 'find', {'NAME': username})
-                .then(result => {
-                    result.length
-                        ? resolve({"userNameExists":true})
-                        : query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
-                            .then(resolve({"userNameExists":false}))
-                })
+            query('users', 'insertOne', {"UID": userId, 'NAME': username, "PIC": ''})
+                .then(resolve("success"))
         })
     },
     wallet(userId, walletId) {
@@ -65,7 +60,7 @@ const SET = {
             newData.forEach(d => d.thumb = 'null');// !?!? why a string
             const {title, description, tags, uniqueContentId} = data;
             const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', uniqueContentId, contentId, userId, newData, title, description, published);
+            console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published);
 
             query('contents', 'find', {'uniqueContentId': uniqueContentId, 'userId':userId, 'published':1})
                 .then(result => {

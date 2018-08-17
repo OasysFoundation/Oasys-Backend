@@ -58,23 +58,23 @@ const SET = {
             const published = status === 'save' ? 0 : 1;
             const newData = data.data;
             newData.forEach(d => d.thumb = 'null');// !?!? why a string
-            const {title, description, tags, uniqueContentId} = data;
+            const {title, description, tags, uniqueContentId, uid} = data;
             const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published);
+            console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published, uid);
 
-            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'userId':userId, 'published':1})
+            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid':uid, 'published':1})
                 .then(result => {
                     result.length
                         ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'userId':userId})
+                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid':uid})
                             .then(result => {
                                 result.length
-                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "userId": userId}, 
-                                            { $set: {"data": newData, title, description, published, tags}},
+                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid}, 
+                                            { $set: {"data": newData, title, description, published, tags, userId}},
                                             {"upsert": true})
                                                 .then(res => resolve(res))
-                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "userId": userId}, 
-                                            { $set: {"data": newData, title, description, published, tags}},
+                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid}, 
+                                            { $set: {"data": newData, title, description, published, tags, userId}},
                                             {"upsert": true})
                                                 .then(res => resolve({"id":newUniqueIDPossibility}))
             
@@ -144,6 +144,7 @@ const GET = {
 
     contentsPreview: () => query('contents', 'find', {published: 1, featured: true}),
     contentsPreviewUserPage: (userId) => query('contents', 'find', {'userId': userId}),
+    contentsPreviewPublishedUserPage: (userId) => query('contents', 'find', {published: 1, 'userId': userId}),
     content: (userId, contentId) => query('contents', 'find', {'userId': userId, 'contentId': contentId}),
 
     //analytics

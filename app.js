@@ -75,13 +75,34 @@ app.get('/GetContentsPreview', function (req, res) {
 });
 
 /*
-Loads picture, title, description, tags, and url from "contents" db with published flag
+Loads picture, title, description, tags, and url from "contents" db for personal user page
 */
-
 app.get('/getUserContentsPreview/:userId', function (req, res) {
     const {userId} = req.params;
     console.log(userId);
     mongo.GET.contentsPreviewUserPage(userId)
+        .then(results => {
+            console.log(results)
+;            gatherRatings(results)
+                .then(ratings => {
+                    //merge the average rating into the original results
+                    results
+                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    res.json(results)
+                })
+                .catch(err => {
+                    throw err
+                })
+        })
+});
+
+/*
+Loads picture, title, description, tags, and url from "contents" db for public user page
+*/
+app.get('/contentsPreviewPublishedUserPage/:userId', function (req, res) {
+    const {userId} = req.params;
+    console.log(userId);
+    mongo.GET.contentsPreviewPublishedUserPage(userId)
         .then(results => {
             console.log(results)
 ;            gatherRatings(results)
@@ -311,7 +332,7 @@ Write data into to "analytics" db
 
 app.post('/saveUserContentAccess', function (req, res) {
     const jsonBody = req.body;
-    const {uid} = jsonBody;
+    const {uid} = req.params;
     const token = req.get("Authorization");
     const isEmpty = Object.keys(jsonBody).length === 0 && data.constructor === Object;
     if (!jsonBody || isEmpty) {

@@ -63,10 +63,10 @@ app.get('/GetContentsPreview', function (req, res) {
         .then(results => {
             gatherRatings(results)
                 .then(ratings => {
+                    //{ mean: x, count: y}
                     //merge the average rating into the original results
-                    results
-                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(results)
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    res.json(updatedContents)
                 })
                 .catch(err => {
                     throw err
@@ -448,12 +448,12 @@ function getRating(userId, contentId, extra = "noExtra") {
     return new Promise(function (resolve, reject) {
         mongo.GET.ratingsForContent(userId, contentId)
             .then(result => {
-                var average = 0;
+                let mean = 0;
                 if(result.length){
                     const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
-                    average = result.length ? sum / result.length : 1.5
+                    mean = result.length ? sum / result.length : -1
                 }
-                resolve(average);
+                resolve({mean, count: result.length});
             })
             .catch(err => {
                 reject(err)
@@ -475,6 +475,8 @@ function verifyUser(uid, username, token){
     })    
 }
 
+
+//get mean ratings for ALL CONTENTS
 const gatherRatings = async function (data) {
     const allRatingsAsync = data.map(async function (result) {
         const {userId, contentId} = result;

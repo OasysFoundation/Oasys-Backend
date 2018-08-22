@@ -41,7 +41,7 @@ const SET = {
         rating: parseInt(rating),
         accessUser
     }),
-    comment(userId, contentId, data){
+    comment(userId, contentId, data) {
         const {time, comment, parent, slideNumber, accessUser} = data
         return query('comments', 'insertOne', {
             contentId,
@@ -62,23 +62,23 @@ const SET = {
             const newUniqueIDPossibility = Date.now();
             console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published, uid);
 
-            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid':uid, 'published':1})
+            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid, 'published': 1})
                 .then(result => {
                     result.length
                         ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid':uid})
+                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid})
                             .then(result => {
                                 result.length
-                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid}, 
-                                            { $set: {"data": newData, title, description, published, tags, userId}},
-                                            {"upsert": true})
-                                                .then(res => resolve(res))
-                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid}, 
-                                            { $set: {"data": newData, title, description, published, tags, userId}},
-                                            {"upsert": true})
-                                                .then(res => resolve({"id":newUniqueIDPossibility}))
-            
-                                })
+                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid},
+                                    {$set: {"data": newData, title, description, published, tags, userId}},
+                                    {"upsert": true})
+                                        .then(res => resolve(res))
+                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid},
+                                    {$set: {"data": newData, title, description, published, tags, userId}},
+                                    {"upsert": true})
+                                        .then(res => resolve({"id": newUniqueIDPossibility}))
+
+                            })
                 })
                 .catch(err => {
                     console.log("didn't find content @ post content");
@@ -102,15 +102,15 @@ const SET = {
                     result.length
                         // right now updateType is only set on quizzes post request. 
                         // eventually we should always include the updateType on analytics post requests
-                        ? updateType && updateType==="quizUpdate"
-                            ? query('analytics', 'update', {contentId, startTime, contentUserId},
-                                {$set: {endTime, quizzes}},
-                                {"upsert": false})
-                                   .then(res => resolve(res))
-                            : query('analytics', 'update', {contentId, startTime, contentUserId},
-                                {$set: {endTime, accessTimes}},
-                                {"upsert": false})
-                                   .then(res => resolve(res))
+                        ? updateType && updateType === "quizUpdate"
+                        ? query('analytics', 'update', {contentId, startTime, contentUserId},
+                            {$set: {endTime, quizzes}},
+                            {"upsert": false})
+                            .then(res => resolve(res))
+                        : query('analytics', 'update', {contentId, startTime, contentUserId},
+                            {$set: {endTime, accessTimes}},
+                            {"upsert": false})
+                            .then(res => resolve(res))
                         : query('analytics', 'insertOne', {
                             startTime,
                             endTime,
@@ -131,6 +131,44 @@ const SET = {
     }
 }
 
+const getContent = async function (contentQueryParams) {
+
+    const contents = await query('contents', 'find', contentQueryParams);
+
+    const ratingParams = []
+
+    contents.map(content => {
+        const {userId, contentId} = content;
+        ratingParams.push({userId, contentId});
+    })
+
+    const allRatingRequests = ratingParams.map(param => new Promise(function (resolve, reject) {
+        GET.ratingsForContent(param.userId, param.contentId)
+            .then(rating => {
+                resolve(rating)
+            })
+            .catch(err => {
+
+                console.log(err)
+                reject(err)
+            })
+    }))
+
+    const finishedRatingReq = await Promise.all(allRatingRequests);
+    console.log(finishedRatingReq, "finishedRatingreque")
+
+    finishedRatingReq.map((ratingsForContent, idx) => {
+        let mean = 0;
+        if(ratingsForContent.length){
+            const sum = ratingsForContent.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
+            mean = ratingsForContent.length ? sum / ratingsForContent.length : -1
+        }
+
+        contents[idx].rating = {count: ratingsForContent.length, mean: mean.toFixed(1)}
+    });
+    return contents;
+}
+
 const GET = {
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
     allComments: (userId) => query('comments', 'find', {userId: userId}),
@@ -138,11 +176,11 @@ const GET = {
     ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
 
     comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),
-    
+
 
     profile: (userId) => query('users', 'find', {'UID': userId}),
 
-    contentsPreview: () => query('contents', 'find', {published: 1, featured: true}),
+    contentsPreview: () => getContent({published: 1, featured: true}),
     contentsPreviewUserPage: (uid) => query('contents', 'find', {'uid': uid}),
     contentsPreviewPublishedUserPage: (uid) => query('contents', 'find', {published: 1, 'uid': uid}),
     content: (userId, contentId) => query('contents', 'find', {'userId': userId, 'contentId': contentId}),

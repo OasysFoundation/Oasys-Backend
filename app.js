@@ -212,11 +212,26 @@ app.post('/postWalletId/', function (req, res) {
 /*
 Write data into to “contents” db
 */
+// user: {
+//     name: null,
+//         uid: null,
+//         idToken: null
+// },
+// title: "Physics101",
+//     id: 'project_1245',
+//     isEditMode: true,
+//     description: 'LASDIADALAIDA',
+//     tags: [], //has categories
+
+
 app.post('/save/', function (req, res) {
     const data = req.body;
-    const {username, contentId, uid} = data;
+    const username = data.user.name;
+    const uid = data.user.uid;
     const token = req.get("Authorization");
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
+
+
     if (!data || isEmpty) {
         res.end("Error: Request body is empty.");
         return
@@ -225,13 +240,16 @@ app.post('/save/', function (req, res) {
         res.end("You cannot save unless you provide the picture url, title, description, and tags");
         return;
     }
-    const pubOrSave = req.body.published ? 'publish' : 'save'
 
     //check if title contains hyphen
-    contentId.indexOf('-') == -1
+   data.title.indexOf('-') == -1
     //check if user is saving as anonymous
     ? verifyUser(uid,username,token).then(
-            mongo.SET.contentPost(pubOrSave, data, username, contentId)
+
+
+            mongo.SET.contentPost(data, uid, username)
+
+
             .then(result => res.json(result))
             .catch(err => {
                 res.end(`Couldnt post content ::: ${err}`);

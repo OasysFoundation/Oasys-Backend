@@ -53,28 +53,29 @@ const SET = {
             slideNumber,
         })
     },
-    contentPost(status, data, userId, contentId) {
+    contentPost(data, userId, username) {
         return new Promise(function (resolve, reject) {
-            const published = status === 'save' ? 0 : 1;
+            const published = data.published;
             const newData = data.data;
             newData.forEach(d => d.thumb = 'null');// !?!? why a string
-            const {title, description, tags, uniqueContentId, uid} = data;
+            const {title, description, tags, contentId, uid} = data;
             const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published, uid);
+            console.log('Save || publish Content :', contentId, userId, newData, title, description, published, uid);
 
-            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid, 'published': 1})
+            query('contents', 'find', {'contentId': contentId, 'uid': uid, 'published': 1})
                 .then(result => {
                     result.length
                         ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid})
+                        : query('contents', 'find', {'contentId': contentId, 'uid': uid})
                             .then(result => {
                                 result.length
-                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid},
-                                    {$set: {"data": newData, title, description, published, tags, userId}},
+                                    ? query('contents', 'update', {"contentId": contentId, "uid": uid},
+                                    {$set: {"data": newData, username, title, description, published, tags, userId}},
                                     {"upsert": true})
                                         .then(res => resolve(res))
-                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid},
-                                    {$set: {"data": newData, title, description, published, tags, userId}},
+
+                                    : query('contents', 'update', {"contentId": newUniqueIDPossibility, "uid": uid},
+                                    {$set: {"data": newData, username, title, description, published, tags, userId}},
                                     {"upsert": true})
                                         .then(res => resolve({"id": newUniqueIDPossibility}))
 

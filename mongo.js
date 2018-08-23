@@ -64,25 +64,20 @@ const SET = {
             // const newUniqueIDPossibility = Date.now();
             console.log('Save || publish Content :', contentId, userId, title, description, published, tags, newData);
 
-            query('contents', 'find', {'contentId': contentId, 'published': 1})
+            query('contents', 'find', {'contentId': contentId, 'uid': userId})
                 .then(result => {
-                    result.length
-                        ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'contentId': contentId, 'uid': userId})
-                            .then(result => {
-                                result.length ?
-                                    //update if exists
-                                    query('contents', 'update', {"contentId": contentId, "uid": userId},
-                                    {$set: {"data": newData, username, title, description, published, tags, userId, featured}},
-                                    {"upsert": true})
-                                        .then(res => resolve(res))
+                    result.length ?
+                        //update if exists
+                        query('contents', 'update', {"contentId": contentId, "uid": userId},
+                        {$set: {"data": newData, username, title, description, published, tags, userId, featured}},
+                        {"upsert": true})
+                            .then(res => resolve(res))
 
 
-                                    //post new entry if new ID
-                                    : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, title, description, published, tags, featured})
-                                        .then(res => resolve({"contentId": contentId}))
+                        //post new entry if new ID
+                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, title, description, published, tags, featured})
+                            .then(res => resolve({"contentId": contentId}))
 
-                            })
                 })
                 .catch(err => {
                     console.log("didn't find content @ post content");

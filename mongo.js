@@ -184,12 +184,12 @@ const GET = {
 
 
     contentById: (contentId) => getContent({'contentId': contentId}),
-    contentByUserNameAndTitle: (userName, title) => getContent({'userId': userName, "title": title}),
+    contentByUserNameAndTitle: (username, title) => getContent({'username': username, "title": title}),
 
     contentsPreview: () => getContent({published: 1, featured: 1}),
     contentsPreviewUserPage: (uid) => getContent({'uid': uid}),
     contentsPreviewPublishedUserPage: (uid) => getContent({published: 1, 'uid': uid}),
-    content: (userId, contentId) => getContent({'userId': userId, 'contentId': contentId}),
+    content: (userId, contentId) => getContent({'username': userId, 'contentId': contentId}),
 
     //analytics
     analyticsFromCreator: (userId) => query('analytics', 'find', {'contentUserId': userId}),

@@ -90,9 +90,9 @@ app.get('/getContentById/:contentId', function (req, res) {
         })
 });
 
-app.get('/getContentByUserNameAndTitle/:userName/:title', function (req, res) {
-    const {userName, title} = req.params;
-    mongo.GET.contentByUserNameAndTitle(userName, title)
+app.get('/getContentByUserNameAndTitle/:username/:title', function (req, res) {
+    const {username, title} = req.params;
+    mongo.GET.contentByUserNameAndTitle(username, title)
         .then(results => {
             gatherRatings(results)
                 .then(ratings => {

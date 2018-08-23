@@ -244,7 +244,7 @@ Write data into to “contents” db
 
 app.post('/save/', function (req, res) {
     const data = req.body;
-    const username = data.user.name;
+    const username = data.user.displayName;
     const uid = data.user.uid;
     const token = req.get("Authorization");
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;

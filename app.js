@@ -74,6 +74,22 @@ app.get('/GetContentsPreview', function (req, res) {
         })
 });
 
+app.get('/GetContentById/:contentId', function (req, res) {
+    mongo.GET.contentById(req.params.contentId)
+        .then(results => {
+            gatherRatings(results)
+                .then(ratings => {
+                    //{ mean: x, count: y}
+                    //merge the average rating into the original results
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    res.json(updatedContents)
+                })
+                .catch(err => {
+                    throw err
+                })
+        })
+});
+
 /*
 Loads picture, title, description, tags, and url from "contents" db for personal user page
 */

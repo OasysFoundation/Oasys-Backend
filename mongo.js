@@ -184,6 +184,7 @@ const GET = {
 
 
     contentById: (contentId) => getContent({'contentId': contentId}),
+    contentByUserNameAndTitle: (userName, title) => getContent({'userId': userName, "title": title}),
 
     contentsPreview: () => getContent({published: 1, featured: 1}),
     contentsPreviewUserPage: (uid) => getContent({'uid': uid}),

@@ -74,8 +74,25 @@ app.get('/GetContentsPreview', function (req, res) {
         })
 });
 
-app.get('/GetContentById/:contentId', function (req, res) {
+app.get('/getContentById/:contentId', function (req, res) {
     mongo.GET.contentById(req.params.contentId)
+        .then(results => {
+            gatherRatings(results)
+                .then(ratings => {
+                    //{ mean: x, count: y}
+                    //merge the average rating into the original results
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    res.json(updatedContents)
+                })
+                .catch(err => {
+                    throw err
+                })
+        })
+});
+
+app.get('/getContentByUserNameAndTitle/:userName/:title', function (req, res) {
+    const {userName, title} = req.params;
+    mongo.GET.contentByUserNameAndTitle(userName, title)
         .then(results => {
             gatherRatings(results)
                 .then(ratings => {

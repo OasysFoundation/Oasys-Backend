@@ -214,8 +214,8 @@ Write data into to “contents” db
 */
 app.post('/save/', function (req, res) {
     const data = req.body;
-    const {username, contentId, uid} = data;
-    const token = req.get("Authorization");
+    const {title} = data;
+    const token = req.get("Authorization")
     const isEmpty = Object.keys(data).length === 0 && data.constructor === Object;
     if (!data || isEmpty) {
         res.end("Error: Request body is empty.");
@@ -228,16 +228,20 @@ app.post('/save/', function (req, res) {
     const pubOrSave = req.body.published ? 'publish' : 'save'
 
     //check if title contains hyphen
-    contentId.indexOf('-') == -1
+    title.indexOf('-') == -1
     //check if user is saving as anonymous
-    ? verifyUser(uid,username,token).then(
-            mongo.SET.contentPost(pubOrSave, data, username, contentId)
+    ? verifyUser(token)
+        .then(function(user){
+            const username = (user==="Anonymous" ? "Anonymous" : user.name);
+            const uid = (user==="Anonymous" ? "Anonymous" : user.uid);
+            mongo.SET.contentPost(pubOrSave, data, uid, username, title)
             .then(result => res.json(result))
             .catch(err => {
                 res.end(`Couldnt post content ::: ${err}`);
                 throw err
             })
-          ).catch(err => {
+          })
+        .catch(err => {
                     res.end("User token expired. Please login again")
                 })
     : res.json({"hyphen":true})
@@ -462,16 +466,16 @@ function getRating(userId, contentId, extra = "noExtra") {
     })
 }
 
-function verifyUser(uid, username, token){
+function verifyUser(token){
     return new Promise(function (resolve, reject) {
-        username === "Anonymous"
-        ? resolve()
-        : admin.auth().verifyIdToken(token)
-            .then(function(decodedToken) {
-              decodedToken.uid==uid
-              ? resolve()
-              : reject()      
-            })
+        token.length===9
+            ? resolve("Anonymous")
+            : admin.auth().verifyIdToken(token)
+                .then(function(decodedToken) {
+                  decodedToken
+                  ? resolve(decodedToken)
+                  : reject()      
+                })        
     })    
 }
 

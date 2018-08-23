@@ -53,32 +53,25 @@ const SET = {
             slideNumber,
         })
     },
-    contentPost(status, data, userId, contentId) {
+    contentPost(status, data, uid, username, contentId) {
         return new Promise(function (resolve, reject) {
             const published = status === 'save' ? 0 : 1;
-            const newData = data.data;
-            newData.forEach(d => d.thumb = 'null');// !?!? why a string
-            const {title, description, tags, uniqueContentId, uid} = data;
+            const newData = data;
+            const {title, description, tags, uniqueContentId} = data;
             const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', uniqueContentId, userId, newData, title, description, published, uid);
+            console.log('Save || publish Content :', uniqueContentId, username, newData, title, description, published, uid);
 
-            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid, 'published': 1})
+            query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid})
                 .then(result => {
                     result.length
-                        ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'uniqueContentId': uniqueContentId, 'uid': uid})
-                            .then(result => {
-                                result.length
-                                    ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid},
-                                    {$set: {"data": newData, title, description, published, tags, userId}},
-                                    {"upsert": true})
-                                        .then(res => resolve(res))
-                                    : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid},
-                                    {$set: {"data": newData, title, description, published, tags, userId}},
-                                    {"upsert": true})
-                                        .then(res => resolve({"id": newUniqueIDPossibility}))
-
-                            })
+                        ? query('contents', 'update', {"uniqueContentId": uniqueContentId, "uid": uid},
+                        {$set: {"data": newData, title, description, published, tags, username}},
+                        {"upsert": true})
+                            .then(res => resolve(res))
+                        : query('contents', 'update', {"uniqueContentId": newUniqueIDPossibility, "uid": uid},
+                        {$set: {"data": newData, title, description, published, tags, username}},
+                        {"upsert": true})
+                            .then(res => resolve({"id": newUniqueIDPossibility}))
                 })
                 .catch(err => {
                     console.log("didn't find content @ post content");

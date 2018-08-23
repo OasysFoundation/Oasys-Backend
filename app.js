@@ -35,8 +35,8 @@ const app = express()
 
 /*Initialize firebase auth*/
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://oasys-create.firebaseio.com'
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://oasys-create.firebaseio.com'
 });
 
 //Middleware for CORS
@@ -99,7 +99,7 @@ app.get('/getUserContentsPreview/:uid', function (req, res) {
     mongo.GET.contentsPreviewUserPage(uid)
         .then(results => {
             console.log(results)
-;            gatherRatings(results)
+            ;gatherRatings(results)
                 .then(ratings => {
                     //merge the average rating into the original results
                     results
@@ -121,7 +121,7 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
     mongo.GET.contentsPreviewPublishedUserPage(uid)
         .then(results => {
             console.log(results)
-;            gatherRatings(results)
+            ;gatherRatings(results)
                 .then(ratings => {
                     //merge the average rating into the original results
                     results
@@ -137,7 +137,9 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
 app.get('/user/:userId/:contentId', function (req, res) {
     const {userId, contentId} = req.params;
     mongo.GET.content(userId, contentId)
-        .then(result => {res.json(result)})
+        .then(result => {
+            res.json(result)
+        })
         .catch(err => res.end(`Couldnt get content  + ${err}`));
 });
 
@@ -154,18 +156,18 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
 Write rating for content into "ratings" db
 */
 app.post('/rate/', function (req, res) {
-    const data = req.body; 
+    const data = req.body;
     const {contentOwner, contentName, rating, userWhoRatesUID} = data;
     const userWhoRates = (data.userWhoRates || "Anonymous")
     const token = req.get("Authorization")
 
     verifyUser(userWhoRatesUID, userWhoRates, token).then(
         mongo.SET.rating(contentOwner, contentName, rating, userWhoRates)
-        .then(result => res.json(result))
-        .catch(err => {
-            res.end('Couldnt get average rating');
-            throw err
-        })
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end('Couldnt get average rating');
+                throw err
+            })
     )
 });
 
@@ -178,13 +180,13 @@ app.post('/comment/', function (req, res) {
     const accessUser = (data.accessUser || "Anonymous")
     const token = req.get("Authorization");
 
-    verifyUser(accessUserUID,accessUser,token).then(
+    verifyUser(accessUserUID, accessUser, token).then(
         mongo.SET.comment(contentUserName, contentName, data)
-        .then(result => res.json(result))
-        .catch(err => {
-            res.end('error posting comment');
-            throw err
-        })
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end('error posting comment');
+                throw err
+            })
     )
 });
 
@@ -196,16 +198,16 @@ app.post('/newUsername/', function (req, res) {
     const {username, uid} = data;
     const token = req.get("Authorization");
     username.indexOf('-') == -1
-    ? verifyUser(uid, username, token).then(
+        ? verifyUser(uid, username, token).then(
         mongo.SET.username(uid, username)
-        .then(result => res.json(result))
-        .catch(err => {
-            res.end(`Couldnt set username ::: ${err}`);
-            throw err
-        })
-      )
-    : res.json({"hyphen":true})
-    
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end(`Couldnt set username ::: ${err}`);
+                throw err
+            })
+        )
+        : res.json({"hyphen": true})
+
 });
 
 /*
@@ -215,15 +217,15 @@ app.post('/postWalletId/', function (req, res) {
     const data = req.body;
     const {userId, walletId, uid} = data;
     const token = req.get("Authorization");
-    verifyUser(uid,userId,token).then(
+    verifyUser(uid, userId, token).then(
         mongo.SET.wallet(userId, walletId)
-        .then(result => res.json(result))
-        .catch(err => {
-            res.end(`Couldnt set walletId ::: ${err}`);
-            throw err
-        })
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end(`Couldnt set walletId ::: ${err}`);
+                throw err
+            })
     )
- });
+});
 
 /*
 Write data into to “contents” db
@@ -256,26 +258,26 @@ app.post('/save/', function (req, res) {
         res.end("You cannot save unless you provide the picture url, title, description, and tags");
         return;
     }
-
     //check if title contains hyphen
-   data.title.indexOf('-') == -1
-    //check if user is saving as anonymous
-    ? verifyUser(uid,username,token).then(
 
-
-            mongo.SET.contentPost(data, uid, username)
-
-
-            .then(result => res.json(result))
-            .catch(err => {
-                res.end(`Couldnt post content ::: ${err}`);
-                throw err
+    data.title.indexOf('-') == -1
+        //check if user is saving as anonymous
+        ? verifyUser(token)
+            .then(function (user) {
+                const username = (user === "Anonymous" ? "Anonymous" : user.name);
+                const uid = (user === "Anonymous" ? "Anonymous" : user.uid);
+                mongo.SET.contentPost(data, uid, username)
+                    .then(result => res.json(result))
+                    .catch(err => {
+                        res.end(`Couldnt post content ::: ${err}`);
+                        throw err
+                    })
             })
-          ).catch(err => {
-                    res.end("User token expired. Please login again")
-                })
-    : res.json({"hyphen":true})
-    
+            .catch(err => {
+                res.end("User token expired. Please login again")
+            })
+        : res.json({"hyphen": true})
+
 });
 
 /*
@@ -291,7 +293,7 @@ app.post('/uploadProfilePic/:uid/', function (request, response) {
     console.log(files);
     console.log(meta);
 
-    verifyUser(uid,"alwaysCheck",token).then(
+    verifyUser(uid, "alwaysCheck", token).then(
         upload(request, response, function (error, success) {
             if (error) {
                 console.log('uploadErr ', error);
@@ -321,7 +323,7 @@ app.post('/uploadTitle/:uid/:userId/:contentId', function (request, response) {
     const {userId, contentId, uid} = request.params;
     const {token} = request.get("Authorization");
 
-    verifyUser(uid,userId,token).then(
+    verifyUser(uid, userId, token).then(
         upload(request, response, function (error, success) {
             if (error) {
                 console.log(error);
@@ -374,10 +376,10 @@ app.post('/saveUserContentAccess', function (req, res) {
     }
     else {
         let username = (jsonBody.accessUserId || "Anonymous")
-        verifyUser(uid,username,token).then(
+        verifyUser(uid, username, token).then(
             mongo.SET.analyticsData(jsonBody)
                 .then(result => {
-                return res.json(result)
+                    return res.json(result)
                 })
                 .catch(err => res.end(`Problem when saving analytics ::: ${err}`))
         )
@@ -436,8 +438,8 @@ app.get('/getAllRatings/:userId', function (req, res) {
 Get Analytics data for user from "analytics" db
 */
 app.get('/getAllComments/:userId', function (req, res) {
-  const userId = req.params.userId;
-  mongo.GET.allComments(userId)
+    const userId = req.params.userId;
+    mongo.GET.allComments(userId)
         .then(comments => res.json(comments))
         .catch(err => {
             console.info(err)
@@ -475,6 +477,7 @@ app.post('/uploadQuillPic', function (request, response) {
     });
 });
 */
+
 /*
 Helper function for calculating rating avg
 */
@@ -483,7 +486,7 @@ function getRating(userId, contentId, extra = "noExtra") {
         mongo.GET.ratingsForContent(userId, contentId)
             .then(result => {
                 let mean = 0;
-                if(result.length){
+                if (result.length) {
                     const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
                     mean = result.length ? sum / result.length : -1
                 }
@@ -496,17 +499,17 @@ function getRating(userId, contentId, extra = "noExtra") {
     })
 }
 
-function verifyUser(uid, username, token){
+function verifyUser(token) {
     return new Promise(function (resolve, reject) {
-        username === "Anonymous"
-        ? resolve()
-        : admin.auth().verifyIdToken(token)
-            .then(function(decodedToken) {
-              decodedToken.uid==uid
-              ? resolve()
-              : reject()      
-            })
-    })    
+        token.length === 9
+            ? resolve("Anonymous")
+            : admin.auth().verifyIdToken(token)
+                .then(function (decodedToken) {
+                    decodedToken
+                        ? resolve(decodedToken)
+                        : reject()
+                })
+    })
 }
 
 

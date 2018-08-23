@@ -174,21 +174,21 @@ const getContent = async function (contentQueryParams) {
 }
 
 const GET = {
-    contentById: (contentId) => getContent({'contentId': contentId}),
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
     allComments: (userId) => query('comments', 'find', {userId: userId}),
-
     ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
 
     comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),
 
-
     profile: (userId) => query('users', 'find', {'UID': userId}),
 
+
+    contentById: (contentId) => getContent({'contentId': contentId}),
+
     contentsPreview: () => getContent({published: 1, featured: 1}),
-    contentsPreviewUserPage: (uid) => query('contents', 'find', {'uid': uid}),
-    contentsPreviewPublishedUserPage: (uid) => query('contents', 'find', {published: 1, 'uid': uid}),
-    content: (userId, contentId) => query('contents', 'find', {'userId': userId, 'contentId': contentId}),
+    contentsPreviewUserPage: (uid) => getContent({'uid': uid}),
+    contentsPreviewPublishedUserPage: (uid) => getContent({published: 1, 'uid': uid}),
+    content: (userId, contentId) => getContent({'userId': userId, 'contentId': contentId}),
 
     //analytics
     analyticsFromCreator: (userId) => query('analytics', 'find', {'contentUserId': userId}),

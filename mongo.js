@@ -35,12 +35,33 @@ const SET = {
             "UID": userId,
         }, {$set: {"walletId": walletId}}, {"upsert": true})
     },
-    rating: (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
-        contentId,
-        userId,
-        rating: parseInt(rating),
-        accessUser
-    }),
+    rating(uid, contentId, rating, accessUserUid) {
+        let userRating = parseInt(rating);
+
+        return new Promise(function(resolve,reject) {
+             console.log('Rate Content :', uid, contentId, userRating, accessUserUid);
+
+             query('ratings', 'find', {'contentId': contentId, 'accessUserUid': accessUserUid})
+                .then(result => {
+                    result.length ?
+                        //update if exists
+                        query('ratings', 'update', {"contentId": contentId, "accessUserUid": accessUserUid},
+                        {$set: {uid, userRating}},
+                        {"upsert": true})
+                            .then(res => resolve(res))
+
+                        //post new entry if new ID
+                        : query('ratings', 'insert', {contentId, uid, userRating, accessUserUid})
+                            .then(res => resolve(res))
+
+                })
+                .catch(err => {
+                    console.log("error when rating", err);
+                    reject(err)
+                    throw err
+                })
+        })
+    },
     comment(userId, contentId, data) {
         const {time, comment, parent, slideNumber, accessUser} = data
         return query('comments', 'insertOne', {

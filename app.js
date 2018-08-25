@@ -169,22 +169,23 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
         .then(result => res.json(result))
         .catch(err => res.end('Couldnt get average rating'));
 });
+
 /*
 Write rating for content into "ratings" db
 */
 app.post('/rate/', function (req, res) {
     const data = req.body;
-    const {contentOwner, contentName, rating, userWhoRatesUID} = data;
-    const userWhoRates = (data.userWhoRates || "Anonymous")
+    const { uid, contentId, rating} = data;
     const token = req.get("Authorization")
 
-    verifyUser(userWhoRatesUID, userWhoRates, token).then(
-        mongo.SET.rating(contentOwner, contentName, rating, userWhoRates)
+    verifyUser(token).then(function(user){
+        mongo.SET.rating(uid, contentId, rating, user.uid)
             .then(result => res.json(result))
             .catch(err => {
                 res.end('Couldnt get average rating');
                 throw err
             })
+        }
     )
 });
 
@@ -518,7 +519,7 @@ function getRating(userId, contentId, extra = "noExtra") {
 
 function verifyUser(token) {
     return new Promise(function (resolve, reject) {
-        token.length === 9
+        !token  || token.length === 9
             ? resolve("Anonymous")
             : admin.auth().verifyIdToken(token)
                 .then(function (decodedToken) {

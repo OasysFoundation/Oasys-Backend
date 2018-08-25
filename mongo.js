@@ -46,12 +46,12 @@ const SET = {
                     result.length ?
                         //update if exists
                         query('ratings', 'update', {"contentId": contentId, "accessUserUid": accessUserUid},
-                        {$set: {uid, userRating}},
+                        {$set: {uid, 'rating': userRating}},
                         {"upsert": true})
                             .then(res => resolve(res))
 
                         //post new entry if new ID
-                        : query('ratings', 'insert', {contentId, uid, userRating, accessUserUid})
+                        : query('ratings', 'insert', {contentId, uid, 'rating': userRating, accessUserUid})
                             .then(res => resolve(res))
 
                 })
@@ -192,7 +192,7 @@ const getContent = async function (contentQueryParams) {
 const GET = {
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
     allComments: (userId) => query('comments', 'find', {userId: userId}),
-    ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
+    ratingsForContent: (uid, contentId) => query('ratings', 'find', {uid, contentId}),
 
     comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),
 

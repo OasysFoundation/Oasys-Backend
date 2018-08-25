@@ -499,11 +499,12 @@ app.post('/uploadQuillPic', function (request, response) {
 /*
 Helper function for calculating rating avg
 */
-function getRating(userId, contentId, extra = "noExtra") {
+function getRating(uid, contentId, extra = "noExtra") {
     return new Promise(function (resolve, reject) {
-        mongo.GET.ratingsForContent(userId, contentId)
+        mongo.GET.ratingsForContent(uid, contentId)
             .then(result => {
                 let mean = 0;
+                console.log("result", result)
                 if (result.length) {
                     const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
                     mean = result.length ? sum / result.length : -1
@@ -534,9 +535,9 @@ function verifyUser(token) {
 //get mean ratings for ALL CONTENTS
 const gatherRatings = async function (data) {
     const allRatingsAsync = data.map(async function (result) {
-        const {userId, contentId} = result;
+        const {uid, contentId} = result;
         console.log("DATA", data);
-        return await getRating(userId, contentId)
+        return await getRating(uid, contentId)
     });
     const allRatings = await Promise.all(allRatingsAsync);
     return allRatings

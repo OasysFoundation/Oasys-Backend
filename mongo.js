@@ -82,6 +82,7 @@ const SET = {
             // newData.forEach(d => d.thumb = 'null');// !?!? why a string
             const {title, description, tags, contentId} = data;
             const userId = data.user.uid;
+            const birthday = Date.now();
             // const newUniqueIDPossibility = Date.now();
             console.log('Save || publish Content :', contentId, userId, title, description, published, tags, newData);
 
@@ -96,7 +97,7 @@ const SET = {
 
 
                         //post new entry if new ID
-                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, title, description, published, tags, featured})
+                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, birthday, title, description, published, tags, featured})
                             .then(res => resolve({"contentId": contentId}))
 
                 })

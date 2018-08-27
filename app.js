@@ -42,7 +42,7 @@ admin.initializeApp({
 //Middleware for CORS
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "*,Content-Type,id");
+    res.header("Access-Control-Allow-Headers", "Content-Type,id,Authorization");
     next();
 });
 
@@ -55,9 +55,8 @@ app.get('/', (req, res) => {
 });
 
 /*
-Loads picture, title, description, tags, and url from "contents" db with published flag
+Loads all overview data from "contents" db with published AND featured flag
 */
-
 app.get('/GetContentsPreview', function (req, res) {
     mongo.GET.contentsPreview()
         .then(results => {

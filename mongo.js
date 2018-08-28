@@ -206,7 +206,7 @@ const GET = {
     contentsPreview: () => getContent({published: 1, featured: 1}),
     contentsPreviewUserPage: (uid) => getContent({'uid': uid}),
     contentsPreviewPublishedUserPage: (uid) => getContent({published: 1, 'uid': uid}),
-    content: (userId, contentId) => getContent({'username': userId, 'contentId': contentId}),
+    content: (uid, contentId) => getContent({'uid': uid, 'contentId': contentId}),
 
     //analytics
     analyticsFromCreator: (userId) => query('analytics', 'find', {'contentUserId': userId}),

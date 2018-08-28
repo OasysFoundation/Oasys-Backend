@@ -160,9 +160,9 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
         })
 });
 
-app.get('/user/:userId/:contentId', function (req, res) {
-    const {userId, contentId} = req.params;
-    mongo.GET.content(userId, contentId)
+app.get('/user/:uid/:contentId', function (req, res) {
+    const {uid, contentId} = req.params;
+    mongo.GET.content(uid, contentId)
         .then(result => {
             res.json(result)
         })

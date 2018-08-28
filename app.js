@@ -65,7 +65,11 @@ app.get('/GetContentsPreview', function (req, res) {
                     //{ mean: x, count: y}
                     //merge the average rating into the original results
                     const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(updatedContents)
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err
@@ -517,6 +521,26 @@ function getRating(uid, contentId, extra = "noExtra") {
     })
 }
 
+/*
+Helper function for getting number of views
+*/
+function getViews(uid){
+    return new Promise(function (resolve, reject) {
+        mongo.GET.analyticsFromCreator(uid)
+            .then(result => {
+                const count = result.reduce((acc, element) => {
+                  acc[element.contentUserId] = acc[element.contentUserId] ? null : 1;
+                  return acc;
+                }, Object.create(null));
+                resolve(Object.keys(count).length);
+            })
+            .catch(err => {
+                reject(err)
+                throw err;
+            });
+    })
+}
+
 function verifyUser(token) {
     return new Promise(function (resolve, reject) {
         !token  || token.length === 9
@@ -540,6 +564,17 @@ const gatherRatings = async function (data) {
     });
     const allRatings = await Promise.all(allRatingsAsync);
     return allRatings
+};
+
+//get mean ratings for ALL CONTENTS
+const gatherViews = async function (data) {
+    const allViewsAsync = data.map(async function (result) {
+        const {uid} = result;
+        console.log("DATA", data);
+        return await getViews(uid)
+    });
+    const allViews = await Promise.all(allViewsAsync);
+    return allViews 
 };
 
 app.listen(8080, () => console.log('Listening on port 8080'))

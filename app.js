@@ -534,8 +534,10 @@ function getViews(uid){
     return new Promise(function (resolve, reject) {
         mongo.GET.analyticsFromCreator(uid)
             .then(result => {
+                console.log("GETTING VIEWS")
+                console.log(result)
                 const count = result.reduce((acc, element) => {
-                  acc[element.contentUserId] = acc[element.contentUserId] ? null : 1;
+                  acc[element.accessUserId] = acc[element.accessUserId] ? null : 1;
                   return acc;
                 }, Object.create(null));
                 resolve(Object.keys(count).length);

@@ -118,13 +118,16 @@ app.get('/getUserContentsPreview/:uid', function (req, res) {
     console.log(uid);
     mongo.GET.contentsPreviewUserPage(uid)
         .then(results => {
-            console.log(results)
-            ;gatherRatings(results)
+            gatherRatings(results)
                 .then(ratings => {
+                    //{ mean: x, count: y}
                     //merge the average rating into the original results
-                    results
-                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(results)
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err
@@ -140,13 +143,16 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
     console.log(uid);
     mongo.GET.contentsPreviewPublishedUserPage(uid)
         .then(results => {
-            console.log(results)
-            ;gatherRatings(results)
+            gatherRatings(results)
                 .then(ratings => {
+                    //{ mean: x, count: y}
                     //merge the average rating into the original results
-                    results
-                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(results)
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err

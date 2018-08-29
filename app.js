@@ -530,17 +530,16 @@ function getRating(uid, contentId, extra = "noExtra") {
 /*
 Helper function for getting number of views
 */
-function getViews(uid){
+function getViews(uid,contentId){
     return new Promise(function (resolve, reject) {
-        mongo.GET.analyticsFromCreator(uid)
+        mongo.GET.analyticsFromContent(uid,contentId)
             .then(result => {
-                console.log("GETTING VIEWS")
-                console.log(result)
-                const count = result.reduce((acc, element) => {
-                  acc[element.accessUserId] = acc[element.accessUserId] ? null : 1;
-                  return acc;
-                }, Object.create(null));
-                resolve(Object.keys(count).length);
+                // const count = result.reduce((acc, element) => {
+                //   acc[element.accessUserId] = acc[element.accessUserId] ? null : 1;
+                //   return acc;
+                // }, Object.create(null));
+                // resolve(Object.keys(count).length);
+                resolve(result.length)
             })
             .catch(err => {
                 reject(err)
@@ -577,9 +576,9 @@ const gatherRatings = async function (data) {
 //get mean ratings for ALL CONTENTS
 const gatherViews = async function (data) {
     const allViewsAsync = data.map(async function (result) {
-        const {uid} = result;
+        const {uid,contentId} = result;
         console.log("DATA", data);
-        return await getViews(uid)
+        return await getViews(uid,contentId)
     });
     const allViews = await Promise.all(allViewsAsync);
     return allViews 

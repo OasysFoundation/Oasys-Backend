@@ -60,6 +60,7 @@ const SET = {
             const newData = data.data;
             // newData.forEach(d => d.thumb = 'null');// !?!? why a string
             const {title, description, tags, contentId} = data;
+
             const userId = data.user.uid;
             // const newUniqueIDPossibility = Date.now();
             console.log('Save || publish Content :', contentId, userId, title, description, published, tags, newData);

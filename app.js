@@ -271,8 +271,8 @@ app.post('/save/', function (req, res) {
         res.end("Error: Request body is empty.");
         return
     }
-    else if ((!data.title || !data.description || !data.tags)) {
-        res.end("You cannot save unless you provide the picture url, title, description, and tags");
+    else if ((!data.title || !data.description)) {
+        res.end("You cannot save unless you provide the picture url, title and description");
         return;
     }
     //check if title contains hyphen

@@ -179,6 +179,21 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
         .catch(err => res.end('Couldnt get average rating'));
 });
 
+
+app.post('/remove', function (req, res) {
+    const {uid, contentId} = req.body;
+    const token = req.get("Authorization");
+    verifyUser(token).then(function(user){
+        mongo.SET.removeContent(user.uid, contentId)
+            .then(result => res.json(result))
+            .catch(err => {
+                res.end('Couldnt remove content');
+                throw err
+            })
+        }
+    )
+});
+
 /*
 Write rating for content into "ratings" db
 */

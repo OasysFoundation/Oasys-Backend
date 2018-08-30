@@ -74,6 +74,28 @@ const SET = {
             slideNumber,
         })
     },
+    removeContent(uid, contentId){
+        return new Promise(function(resolve,reject) {
+             console.log('Remove Content :', uid, contentId);
+
+             query('contents', 'find', {'contentId': contentId, 'uid': uid})
+                .then(result => {
+                    result.length ?
+                        //update if exists
+                        query('contents', 'remove', {"contentId": contentId, "uid": uid})
+                            .then(res => resolve(res))
+
+                        //post new entry if new ID
+                        : resolve("No Content")
+
+                })
+                .catch(err => {
+                    console.log("error when rating", err);
+                    reject(err)
+                    throw err
+                })
+        })
+    },
     contentPost(data, userId, username) {
         return new Promise(function (resolve, reject) {
             const published = data.published;

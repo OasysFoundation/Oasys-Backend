@@ -42,7 +42,7 @@ admin.initializeApp({
 //Middleware for CORS
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "*,Content-Type,id");
+    res.header("Access-Control-Allow-Headers", "Content-Type,id,Authorization");
     next();
 });
 
@@ -55,9 +55,8 @@ app.get('/', (req, res) => {
 });
 
 /*
-Loads picture, title, description, tags, and url from "contents" db with published flag
+Loads all overview data from "contents" db with published AND featured flag
 */
-
 app.get('/GetContentsPreview', function (req, res) {
     mongo.GET.contentsPreview()
         .then(results => {
@@ -66,7 +65,11 @@ app.get('/GetContentsPreview', function (req, res) {
                     //{ mean: x, count: y}
                     //merge the average rating into the original results
                     const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(updatedContents)
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err
@@ -115,13 +118,16 @@ app.get('/getUserContentsPreview/:uid', function (req, res) {
     console.log(uid);
     mongo.GET.contentsPreviewUserPage(uid)
         .then(results => {
-            console.log(results)
-            ;gatherRatings(results)
+            gatherRatings(results)
                 .then(ratings => {
+                    //{ mean: x, count: y}
                     //merge the average rating into the original results
-                    results
-                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(results)
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err
@@ -137,13 +143,16 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
     console.log(uid);
     mongo.GET.contentsPreviewPublishedUserPage(uid)
         .then(results => {
-            console.log(results)
-            ;gatherRatings(results)
+            gatherRatings(results)
                 .then(ratings => {
+                    //{ mean: x, count: y}
                     //merge the average rating into the original results
-                    results
-                        .map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
-                    res.json(results)
+                    const updatedContents = results.map((result, idx) => Object.assign(result, {rating: ratings[idx]}));
+                    gatherViews(updatedContents)
+                        .then(views=>{
+                            const contents = updatedContents.map((result, idx) => Object.assign(result, {views: views[idx]}));
+                            res.json(contents)
+                        })                        
                 })
                 .catch(err => {
                     throw err
@@ -151,9 +160,9 @@ app.get('/contentsPreviewPublishedUserPage/:uid', function (req, res) {
         })
 });
 
-app.get('/user/:userId/:contentId', function (req, res) {
-    const {userId, contentId} = req.params;
-    mongo.GET.content(userId, contentId)
+app.get('/user/:uid/:contentId', function (req, res) {
+    const {uid, contentId} = req.params;
+    mongo.GET.content(uid, contentId)
         .then(result => {
             res.json(result)
         })
@@ -169,22 +178,23 @@ app.get('avgRating/:userId/:contentId', function (req, res) {
         .then(result => res.json(result))
         .catch(err => res.end('Couldnt get average rating'));
 });
+
 /*
 Write rating for content into "ratings" db
 */
 app.post('/rate/', function (req, res) {
     const data = req.body;
-    const {contentOwner, contentName, rating, userWhoRatesUID} = data;
-    const userWhoRates = (data.userWhoRates || "Anonymous")
+    const { uid, contentId, rating} = data;
     const token = req.get("Authorization")
 
-    verifyUser(userWhoRatesUID, userWhoRates, token).then(
-        mongo.SET.rating(contentOwner, contentName, rating, userWhoRates)
+    verifyUser(token).then(function(user){
+        mongo.SET.rating(uid, contentId, rating, user.uid)
             .then(result => res.json(result))
             .catch(err => {
                 res.end('Couldnt get average rating');
                 throw err
             })
+        }
     )
 });
 
@@ -498,11 +508,12 @@ app.post('/uploadQuillPic', function (request, response) {
 /*
 Helper function for calculating rating avg
 */
-function getRating(userId, contentId, extra = "noExtra") {
+function getRating(uid, contentId, extra = "noExtra") {
     return new Promise(function (resolve, reject) {
-        mongo.GET.ratingsForContent(userId, contentId)
+        mongo.GET.ratingsForContent(uid, contentId)
             .then(result => {
                 let mean = 0;
+                console.log("result", result)
                 if (result.length) {
                     const sum = result.reduce((acc, val) => ({rating: acc.rating + val.rating})).rating;
                     mean = result.length ? sum / result.length : -1
@@ -516,9 +527,30 @@ function getRating(userId, contentId, extra = "noExtra") {
     })
 }
 
+/*
+Helper function for getting number of views
+*/
+function getViews(uid,contentId){
+    return new Promise(function (resolve, reject) {
+        mongo.GET.analyticsFromContent(uid,contentId)
+            .then(result => {
+                // const count = result.reduce((acc, element) => {
+                //   acc[element.accessUserId] = acc[element.accessUserId] ? null : 1;
+                //   return acc;
+                // }, Object.create(null));
+                // resolve(Object.keys(count).length);
+                resolve(result.length)
+            })
+            .catch(err => {
+                reject(err)
+                throw err;
+            });
+    })
+}
+
 function verifyUser(token) {
     return new Promise(function (resolve, reject) {
-        token.length === 9
+        !token  || token.length === 9
             ? resolve("Anonymous")
             : admin.auth().verifyIdToken(token)
                 .then(function (decodedToken) {
@@ -533,12 +565,23 @@ function verifyUser(token) {
 //get mean ratings for ALL CONTENTS
 const gatherRatings = async function (data) {
     const allRatingsAsync = data.map(async function (result) {
-        const {userId, contentId} = result;
+        const {uid, contentId} = result;
         console.log("DATA", data);
-        return await getRating(userId, contentId)
+        return await getRating(uid, contentId)
     });
     const allRatings = await Promise.all(allRatingsAsync);
     return allRatings
+};
+
+//get mean ratings for ALL CONTENTS
+const gatherViews = async function (data) {
+    const allViewsAsync = data.map(async function (result) {
+        const {uid,contentId} = result;
+        console.log("DATA", data);
+        return await getViews(uid,contentId)
+    });
+    const allViews = await Promise.all(allViewsAsync);
+    return allViews 
 };
 
 app.listen(8080, () => console.log('Listening on port 8080'))

@@ -35,12 +35,33 @@ const SET = {
             "UID": userId,
         }, {$set: {"walletId": walletId}}, {"upsert": true})
     },
-    rating: (userId, contentId, rating, accessUser) => query('ratings', 'insertOne', {
-        contentId,
-        userId,
-        rating: parseInt(rating),
-        accessUser
-    }),
+    rating(uid, contentId, rating, accessUserUid) {
+        let userRating = parseInt(rating);
+
+        return new Promise(function(resolve,reject) {
+             console.log('Rate Content :', uid, contentId, userRating, accessUserUid);
+
+             query('ratings', 'find', {'contentId': contentId, 'accessUserUid': accessUserUid})
+                .then(result => {
+                    result.length ?
+                        //update if exists
+                        query('ratings', 'update', {"contentId": contentId, "accessUserUid": accessUserUid},
+                        {$set: {uid, 'rating': userRating}},
+                        {"upsert": true})
+                            .then(res => resolve(res))
+
+                        //post new entry if new ID
+                        : query('ratings', 'insert', {contentId, uid, 'rating': userRating, accessUserUid})
+                            .then(res => resolve(res))
+
+                })
+                .catch(err => {
+                    console.log("error when rating", err);
+                    reject(err)
+                    throw err
+                })
+        })
+    },
     comment(userId, contentId, data) {
         const {time, comment, parent, slideNumber, accessUser} = data
         return query('comments', 'insertOne', {
@@ -59,31 +80,26 @@ const SET = {
             const featured = data.featured;
             const newData = data.data;
             // newData.forEach(d => d.thumb = 'null');// !?!? why a string
-            const {title, description, tags, contentId} = data;
-
+            const {title, description, tags, contentId, iconName} = data;
             const userId = data.user.uid;
+            const birthday = Date.now();
             // const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', contentId, userId, title, description, published, tags, newData);
+            console.log('Save || publish Content :', contentId, userId, title, description, published, tags, iconName, newData);
 
-            query('contents', 'find', {'contentId': contentId, 'published': 1})
+            query('contents', 'find', {'contentId': contentId, 'uid': userId})
                 .then(result => {
-                    result.length
-                        ? resolve({"alreadyPublished": true})
-                        : query('contents', 'find', {'contentId': contentId, 'uid': userId})
-                            .then(result => {
-                                result.length ?
-                                    //update if exists
-                                    query('contents', 'update', {"contentId": contentId, "uid": userId},
-                                    {$set: {"data": newData, username, title, description, published, tags, userId, featured}},
-                                    {"upsert": true})
-                                        .then(res => resolve(res))
+                    result.length ?
+                        //update if exists
+                        query('contents', 'update', {"contentId": contentId, "uid": userId},
+                        {$set: {"data": newData, username, title, description, published, tags, userId, featured,iconName}},
+                        {"upsert": true})
+                            .then(res => resolve(res))
 
 
-                                    //post new entry if new ID
-                                    : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, title, description, published, tags, featured})
-                                        .then(res => resolve({"contentId": contentId}))
+                        //post new entry if new ID
+                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, birthday, title, description, published, tags, featured, iconName})
+                            .then(res => resolve({"contentId": contentId}))
 
-                            })
                 })
                 .catch(err => {
                     console.log("didn't find content @ post content");
@@ -177,7 +193,7 @@ const getContent = async function (contentQueryParams) {
 const GET = {
     allRatings: (userId) => query('ratings', 'find', {userId: userId}),
     allComments: (userId) => query('comments', 'find', {userId: userId}),
-    ratingsForContent: (userId, contentId) => query('ratings', 'find', {userId, contentId}),
+    ratingsForContent: (uid, contentId) => query('ratings', 'find', {uid, contentId}),
 
     comments: (userId, contentId, slideNumber) => query('comments', 'find', {contentId, userId, slideNumber}),
 
@@ -190,7 +206,7 @@ const GET = {
     contentsPreview: () => getContent({published: 1, featured: 1}),
     contentsPreviewUserPage: (uid) => getContent({'uid': uid}),
     contentsPreviewPublishedUserPage: (uid) => getContent({published: 1, 'uid': uid}),
-    content: (userId, contentId) => getContent({'username': userId, 'contentId': contentId}),
+    content: (uid, contentId) => getContent({'uid': uid, 'contentId': contentId}),
 
     //analytics
     analyticsFromCreator: (userId) => query('analytics', 'find', {'contentUserId': userId}),

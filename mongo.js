@@ -80,24 +80,24 @@ const SET = {
             const featured = data.featured;
             const newData = data.data;
             // newData.forEach(d => d.thumb = 'null');// !?!? why a string
-            const {title, description, tags, contentId} = data;
+            const {title, description, tags, contentId, iconName} = data;
             const userId = data.user.uid;
             const birthday = Date.now();
             // const newUniqueIDPossibility = Date.now();
-            console.log('Save || publish Content :', contentId, userId, title, description, published, tags, newData);
+            console.log('Save || publish Content :', contentId, userId, title, description, published, tags, iconName, newData);
 
             query('contents', 'find', {'contentId': contentId, 'uid': userId})
                 .then(result => {
                     result.length ?
                         //update if exists
                         query('contents', 'update', {"contentId": contentId, "uid": userId},
-                        {$set: {"data": newData, username, title, description, published, tags, userId, featured}},
+                        {$set: {"data": newData, username, title, description, published, tags, userId, featured,iconName}},
                         {"upsert": true})
                             .then(res => resolve(res))
 
 
                         //post new entry if new ID
-                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, birthday, title, description, published, tags, featured})
+                        : query('contents', 'insert', {"contentId": contentId, "uid": userId, "data": newData, username, birthday, title, description, published, tags, featured, iconName})
                             .then(res => resolve({"contentId": contentId}))
 
                 })
